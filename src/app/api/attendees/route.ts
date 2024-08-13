@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('attendees')
-    .select('users (name)')
+    .select('users (name), timesegments')
     .eq('eventid', eventid)
 
   if (error) {

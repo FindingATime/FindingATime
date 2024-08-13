@@ -17,11 +17,39 @@ export async function getAttendees(eventid: UUID) {
     })
     .then((data) => {
       console.log('Data: ', data)
-      const attendeesData = data.map((attendee: any) => {
-        return attendee.users.name
-      })
-      console.log(attendeesData)
-      return attendeesData
+      return data
+    })
+    .catch((error) => {
+      console.error('Error:', error.message)
+    })
+}
+
+export async function addAttendee(
+  userId: UUID,
+  eventid: UUID,
+  preferredTimes: JSON,
+) {
+  fetch('/api/attendees/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      eventid: eventid,
+      userid: userId,
+      preferredTimes: preferredTimes,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((err) => {
+          throw new Error(err.message)
+        })
+      }
+      return response.json()
+    })
+    .then((data) => {
+      console.log('Success:', data)
     })
     .catch((error) => {
       console.error('Error:', error.message)
