@@ -6,7 +6,13 @@ import { UUID } from 'crypto'
 
 interface Attendee {
   users: { name: string }
-  timesegments: { [key: string]: any[] }
+  timesegments: {
+    [key: string]: {
+      beginning: string
+      end: string
+      type: string
+    }
+  }
 }
 
 export default function Test() {
@@ -32,7 +38,7 @@ export default function Test() {
                 ([date, segments], idx) => (
                   <li key={idx}>
                     {date}:{' '}
-                    {segments.length > 0
+                    {Array.isArray(segments) && segments.length > 0
                       ? segments.map((segment, i) => (
                           <span key={i}>{JSON.stringify(segment)}</span>
                         ))
