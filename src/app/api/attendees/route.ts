@@ -8,17 +8,17 @@ export async function GET(request: Request) {
   const supabase = createServerClient(cookieStore)
 
   const url = new URL(request.url)
-  const creatorId = url.searchParams.get('creatorId')
+  const eventid = url.searchParams.get('eventid')
 
   const { data, error } = await supabase
     .from('attendees')
-    .select()
-    .eq('creator', creatorId)
+    .select('users (name)')
+    .eq('eventid', eventid)
 
   if (error) {
     return NextResponse.json({
       status: 400,
-      message: 'Error fetching attendees',
+      message: 'Error fetching attendees: ' + error,
     })
   }
   return NextResponse.json(data)

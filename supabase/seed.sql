@@ -61,7 +61,7 @@ values
   );
 
 insert into Attendees
-  (eventID, attendee, timesegments)
+  (eventid, attendee, timesegments)
 values
   ('422b9945-e8c6-4a30-85d9-933a9a46a389', 
   '9e33186f-95db-4385-a974-ee38c8e07547', 
@@ -111,6 +111,26 @@ values
   ),
   ('3301bfc2-43f3-43cc-8e25-856eee164012', 
   '9e33186f-95db-4385-a974-ee38c8e07547', 
+    ('{
+    "Aug 10": [],
+    "Aug 11": [
+      {
+        "beginning":"09:00",
+        "end":"10:00",
+        "type":"Preferred"
+      },
+      {
+        "beginning":"11:00",
+        "end":"12:00",
+        "type":"Regular"
+        }
+      ], 
+    "Aug 12": [],
+    "Aug 15": []
+  }')
+  ), 
+  ('3301bfc2-43f3-43cc-8e25-856eee164012', 
+  'fb511b72-8d6d-450c-be69-dd5e82dfda5b', 
     ('{
     "Aug 10": [],
     "Aug 11": [
