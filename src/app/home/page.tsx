@@ -46,27 +46,15 @@ export default function Index() {
 
   return (
     <div className="container mx-auto p-4">
-      {' '}
-      {/*main container with max width auto center and padding 4*/}
       <div className="flex">
-        {' '}
-        {/*flex container to arrange child elements in a row*/}
         <div className="w-2/3 p-4">
-          {' '}
-          {/*container for left side 2/3 of the width and has padding 4*/}
           <div className="mb-4 flex items-center justify-start">
-            {' '}
-            {/*flex container to align heading and button horizontally to have them closer together*/}
             <h1 className="text-2xl font-black font-extrabold">My Events</h1>{' '}
-            {/*heading for MY Events*/}
             <Link href="/create-event">
               <button className="btn btn-primary ml-6">+ New Event</button>{' '}
             </Link>
-            {/*button to add new event with primary styling and margin left 6*/}
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {' '}
-            {/*grid container with 2 columns and gap between the items*/}
             {events.length > 0 &&
               events.map((event) => (
                 <EventCard
@@ -75,16 +63,11 @@ export default function Index() {
                   endtime={event.endtime}
                   key={event.id}
                 />
-              ))}{' '}
-          </div>{' '}
-          {/*div to close grid container*/}
-        </div>{' '}
-        {/*div to close left side container*/}
-        <div className="w-1/3 bg-white p-4">
-          {/*container for right side 1/3 of the width and has padding 4 background white and is left blank on prupose (will add later)*/}
+              ))}
+          </div>
         </div>
-      </div>{' '}
-      {/*div to close flex container*/}
+        <div className="w-1/3 bg-white p-4"></div>
+      </div>
     </div>
   )
 }

@@ -4,63 +4,78 @@ import EventView from '@/components/EventView'
 import { Suspense, useEffect, useState } from 'react'
 import EventCard from '@/components/EventCard'
 import { useSearchParams } from 'next/navigation'
+import { getEvent } from '@/utils/eventsUtils'
+
+interface Event {
+  id: UUID
+  viewTime: Date
+  title: string
+  starttime: string
+  endtime: string
+}
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
-
-  const eventId = searchParams.get('eventId')
-
-  const [events, setEvents] = useState<any[]>([])
-
+  const eventid = searchParams.get('eventid')
+  const [event, setEvent] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
 
   useEffect(() => {
-    const getTheEvent = async () => {
-      fetch(`/api/events?eventId=${eventId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    getEvent(eventid as UUID)
+      .then((data) => {
+        const newEvent: Event = {
+          id: eventid as UUID,
+          viewTime: new Date(),
+          title: data[0].title,
+          starttime: data[0].starttime,
+          endtime: data[0].endtime,
+        }
+        if (!localStorage.getItem('FindingATimeRecentlyViewed')) {
+          localStorage.setItem(
+            'FindingATimeRecentlyViewed',
+            JSON.stringify([newEvent]),
+          )
+          setRecentlyViewedEvents([newEvent])
+        } else {
+          const recentlyViewedEventsData: Event[] = JSON.parse(
+            localStorage.getItem('FindingATimeRecentlyViewed') as string,
+          )
+          console.log(
+            'Recently viewed events before: ',
+            recentlyViewedEventsData,
+          )
+          recentlyViewedEventsData.push(newEvent)
+          recentlyViewedEventsData.filter((event) => event.id !== newEvent.id)
+          recentlyViewedEventsData.sort((a, b) => {
+            return (
+              new Date(b.viewTime).getTime() - new Date(a.viewTime).getTime()
+            )
+          })
+          console.log(
+            'Recently viewed events after: ',
+            recentlyViewedEventsData,
+          )
+        }
+        setEvent(newEvent)
       })
-        .then((response) => {
-          if (!response.ok) {
-            return response.json().then((err) => {
-              throw new Error(err.message)
-            })
-          }
-          return response.json()
-        })
-        .then((data) => {
-          setEvents(data)
-        })
-        .catch((error) => {
-          setError(error.message)
-          console.error('Error:', error.message)
-        })
-    }
-
-    if (eventId) {
-      getTheEvent()
-    } else {
-      setError('No event found')
-    }
-  }, [eventId])
-
-  if (error) {
-    return <div>Error: {error}</div>
-  }
+      .catch((error) => {
+        setError('No event found')
+      })
+    console.log('eventId:', eventid)
+  }, [])
 
   return (
     <div>
       <EventView />
-      {events.map((event) => (
+      {event && (
         <EventCard
           title={event.title}
           starttime={event.starttime}
           endtime={event.endtime}
           key={event.id}
         />
-      ))}
+      )}
     </div>
   )
 }
