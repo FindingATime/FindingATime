@@ -96,7 +96,7 @@ export async function addUserCreateEvent(
       })
   }
 
-  await insertEvent(
+  const data = await insertEvent(
     title,
     description,
     starttime,
@@ -107,4 +107,5 @@ export async function addUserCreateEvent(
     config,
     localStorage.getItem('username') as UUID,
   )
+  return data
 }

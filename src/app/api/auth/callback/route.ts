@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 
+export const runtime = 'edge'
+
 export async function GET(request: Request) {
   // The `/auth/callback` route is required for the server-side auth flow implemented
   // by the Auth Helpers package. It exchanges an auth code for the user's session.

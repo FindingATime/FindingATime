@@ -46,9 +46,12 @@
     "next-themes": "^0.2.1",
     "nextjs-toploader": "^1.6.4",
     "react": "18.2.0",
+    "react-calendar": "^5.0.0",
     "react-dom": "18.2.0",
+    "react-hot-toast": "^2.4.1",
     "tailwind-merge": "^2.2.0",
-    "undici": "^5.28.2"
+    "undici": "^5.28.2",
+    "vanilla-cookieconsent": "^3.0.1"
   },
   "devDependencies": {
     "@swc/core": "^1.3.102",

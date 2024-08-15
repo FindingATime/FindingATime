@@ -3,6 +3,8 @@ import { headers, cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/utils/supabase'
 
+export const runtime = 'edge'
+
 export default function Login({
   searchParams,
 }: {

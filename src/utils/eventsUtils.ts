@@ -11,7 +11,7 @@ export async function insertEvent(
   config: JSON,
   creator: UUID,
 ) {
-  fetch('/api/events/create', {
+  const response = await fetch('/api/events/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -28,18 +28,11 @@ export async function insertEvent(
       creator: creator,
     }),
   })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((err) => {
-          throw new Error(err.message)
-        })
-      }
-      return response.json()
-    })
-    .then((data) => {
-      console.log('Success:', data)
-    })
-    .catch((error) => {
-      console.error('Error:', error.message)
-    })
+
+  if (!response.ok) {
+    const err = await response.json()
+    throw new Error(err.message)
+  }
+
+  return response.json() // Returns the JSON response including the eventId
 }

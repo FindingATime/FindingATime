@@ -3,6 +3,8 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { modeOptions, days } from '@/utils/dateUtils'
 
+export const runtime = 'edge'
+
 export async function POST(request: Request) {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)

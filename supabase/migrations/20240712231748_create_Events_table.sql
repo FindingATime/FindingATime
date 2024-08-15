@@ -9,5 +9,5 @@ location text,
 timezone text,
 mode text,
 config json,
-creator uuid references Users(id)
+creator uuid references Users(id),
 );

@@ -1,26 +1,31 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { generateTimeRange } from '@/utils/timeUtils'
+import { months } from '@/utils/dateUtils'
 
 interface GridProps {
   earliestTime: string
   latestTime: string
   isAvailable: boolean // Determines if the grid is selectable (selection mode)
-  daysOfWeek: string[]
+  mode: string
+  config: string[]
+  setConfig: React.Dispatch<React.SetStateAction<string[]>>
 }
 
 const Grid = ({
   earliestTime,
   latestTime,
   isAvailable,
-  daysOfWeek,
+  mode,
+  config,
+  setConfig,
 }: GridProps) => {
   // Generate time array for row headings
   const timeArray = generateTimeRange(earliestTime, latestTime)
 
   // Grid dimensions
   const dimensions = {
-    width: daysOfWeek.length || 1, // default to 1 if daysOfWeek is empty
+    width: config.length || 1, // default to 1 if daysOfWeek is empty
     height: timeArray.length,
   }
 
@@ -33,11 +38,28 @@ const Grid = ({
 
   const [grid, setGrid] = useState(initialGrid)
   const [isSelecting, setIsSelecting] = useState(false)
+  const [dates, setDates] = useState<string[]>([])
 
   // Update grid dimensions when daysOfWeek changes
   useEffect(() => {
     setGrid(initialGrid())
-  }, [daysOfWeek.length, timeArray.length])
+    if (mode === 'weekly') {
+      const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      config = config.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+      setDates(config)
+    } else {
+      // Sort dates in ascending order
+      let newConfig = config
+      newConfig = config.sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      )
+      newConfig = newConfig.map(
+        (date) =>
+          months[new Date(date).getMonth()] + ' ' + new Date(date).getDate(),
+      )
+      setDates(newConfig)
+    }
+  }, [config.length, timeArray.length])
 
   // Function is called when the mouse is pressed down on a cell
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
@@ -108,7 +130,7 @@ const Grid = ({
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
             }}
           >
-            {daysOfWeek.map((day, index) => (
+            {dates.map((day, index) => (
               <div
                 key={index}
                 className="flex items-center justify-center border-gray-300 text-sm text-gray-600"

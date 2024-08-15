@@ -1,9 +1,9 @@
 'use client'
 import { useState, useRef } from 'react'
 import { randomUUID, UUID } from 'crypto'
-import { days, modeOptions } from '@/utils/dateUtils'
 import { addUserCreateEvent } from '@/utils/userUtils'
 import { insertEvent } from '@/utils/eventsUtils'
+import { useRouter } from 'next/navigation'
 
 import EventForm from '@/components/EventForm'
 import Grid from '@/components/AvailabilityGrid'
@@ -15,9 +15,8 @@ export default function CreateEvent() {
   const [location, setLocation] = useState('')
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
-  const [mode, setMode] = useState('')
-  const [config, setConfig] = useState<JSON | null>(null)
-  const [daysOfWeek, setDaysOfWeek] = useState<string[] | null>(null)
+  const [mode, setMode] = useState('weekly')
+  const [config, setConfig] = useState<string[]>([])
   const [timezone, setTimezone] = useState('')
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in
@@ -30,6 +29,10 @@ export default function CreateEvent() {
   /* 
     Add userName to responders array when they click the "Save" button 
    */
+
+  //added router to redirect to view-event page after creating event
+  const router = useRouter()
+
   const handleSaveResponse = () => {
     if (userName) {
       setResponders((prevResponders) => {
@@ -43,16 +46,7 @@ export default function CreateEvent() {
   }
 
   // Create Event Button function
-  const handleSubmit = () => {
-    console.log(`Title: ${title}`)
-    console.log(`Description: ${description}`)
-    console.log(`Location: ${location}`)
-    console.log(`Earliest Time: ${earliestTime}`)
-    console.log(`Latest Time: ${latestTime}`)
-    console.log(`Mode: ${mode}`)
-    console.log(`DaysOfWeek: ${daysOfWeek}`)
-    console.log(`Timezone: ${timezone}`)
-
+  const handleSubmit = async () => {
     const daysOfWeekJSON: { [key: string]: boolean } = {
       Mon: false,
       Tue: false,
@@ -63,26 +57,44 @@ export default function CreateEvent() {
       Sun: false,
     }
 
-    if (daysOfWeek) {
-      daysOfWeek.forEach((day) => {
+    const configJSON: { [key: string]: string[] } = {
+      days: [],
+    }
+
+    if (mode === 'weekly') {
+      config.forEach((day) => {
         if (daysOfWeekJSON.hasOwnProperty(day)) {
           daysOfWeekJSON[day] = true
         }
       })
+    } else {
+      config.forEach((day) => {
+        configJSON.days.push(day)
+      })
     }
 
-    addUserCreateEvent(
-      title,
-      description,
-      earliestTime,
-      latestTime,
-      location,
-      timezone,
-      mode,
-      mode === 'weekly'
-        ? daysOfWeekJSON
-        : JSON.parse('{"days": ["2024-01-01"]}'), // filler for specific mode now because no calendar yet
-    )
+
+    try {
+      const data = await addUserCreateEvent(
+        title,
+        description,
+        earliestTime,
+        latestTime,
+        location,
+        timezone,
+        mode,
+        mode === 'weekly'
+          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
+          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
+      )
+      router.push(`/view-event?eventId=${data[0].id}`) // Redirects to the event view page using the eventId
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message)
+      } else {
+        console.error('Unexpected error:', error)
+      }
+    }
 
     // Call handleSaveResponse to save the response
     handleSaveResponse()
@@ -117,8 +129,8 @@ export default function CreateEvent() {
           setLatestTime={setLatestTime}
           mode={mode}
           setMode={setMode}
-          daysOfWeek={daysOfWeek}
-          setDaysOfWeek={setDaysOfWeek}
+          config={config}
+          setConfig={setConfig}
           timezone={timezone}
           setTimezone={setTimezone}
         />
@@ -171,7 +183,9 @@ export default function CreateEvent() {
           earliestTime={earliestTime}
           latestTime={latestTime}
           isAvailable={isAvailable}
-          daysOfWeek={daysOfWeek || []}
+          mode={mode}
+          config={config}
+          setConfig={setConfig}
         />
 
         {isButtonsVisible && ( // Conditionally render buttons section
