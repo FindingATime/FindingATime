@@ -5,14 +5,7 @@ import { Suspense, useEffect, useState } from 'react'
 import EventCard from '@/components/EventCard'
 import { useSearchParams } from 'next/navigation'
 import { getEvent } from '@/utils/eventsUtils'
-
-interface Event {
-  id: UUID
-  viewTime: Date
-  title: string
-  starttime: string
-  endtime: string
-}
+import { Event } from '@/utils/eventsUtils'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -82,9 +75,12 @@ const ViewEvent = () => {
       <EventView />
       {event && (
         <EventCard
+          eventid={event.id}
           title={event.title}
           starttime={event.starttime}
           endtime={event.endtime}
+          days={null}
+          date={null}
           key={event.id}
         />
       )}

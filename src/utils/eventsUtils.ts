@@ -1,5 +1,13 @@
 import { UUID } from 'crypto'
 
+export interface Event {
+  id: UUID
+  viewTime: Date
+  title: string
+  starttime: string
+  endtime: string
+}
+
 export async function insertEvent(
   title: string,
   description: string,
