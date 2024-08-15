@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import CalendarIcon from '../app/CalendarIcon.jpeg'
 
 export default function Header() {
   return (
@@ -7,9 +8,7 @@ export default function Header() {
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex text-xl font-bold">
           <Image
-            src="/CalendarIcon.png"
-            width="1000"
-            height="1000"
+            src={CalendarIcon}
             alt="calendar"
             className="inline-block h-8 w-8"
           />
