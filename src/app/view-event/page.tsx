@@ -31,12 +31,19 @@ const ViewEvent = () => {
           starttime: data[0].starttime,
           endtime: data[0].endtime,
         }
+        setEvent(newEvent)
         if (!localStorage.getItem('FindingATimeRecentlyViewed')) {
           localStorage.setItem(
             'FindingATimeRecentlyViewed',
             JSON.stringify([newEvent]),
           )
           setRecentlyViewedEvents([newEvent])
+          console.log(
+            'Recently viewed events first: ',
+            JSON.parse(
+              localStorage.getItem('FindingATimeRecentlyViewed') as string,
+            ),
+          )
         } else {
           const recentlyViewedEventsData: Event[] = JSON.parse(
             localStorage.getItem('FindingATimeRecentlyViewed') as string,
@@ -57,7 +64,6 @@ const ViewEvent = () => {
             recentlyViewedEventsData,
           )
         }
-        setEvent(newEvent)
       })
       .catch((error) => {
         setError('No event found')
