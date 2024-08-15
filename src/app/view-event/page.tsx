@@ -75,7 +75,7 @@ const ViewEvent = () => {
         setError('No event found')
       })
     console.log('eventId:', eventid)
-  }, [])
+  }, [eventid])
 
   return (
     <div>
