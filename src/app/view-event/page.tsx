@@ -67,7 +67,7 @@ const ViewEvent = () => {
       .catch((error) => {
         setError('No event found')
       })
-    console.log('eventId:', eventid)
+    console.log('eventid:', eventid)
   }, [eventid])
 
   return (

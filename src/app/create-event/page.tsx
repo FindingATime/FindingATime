@@ -73,7 +73,6 @@ export default function CreateEvent() {
       })
     }
 
-
     try {
       const data = await addUserCreateEvent(
         title,
@@ -87,7 +86,7 @@ export default function CreateEvent() {
           ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
           : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
       )
-      router.push(`/view-event?eventId=${data[0].id}`) // Redirects to the event view page using the eventId
+      router.push(`/view-event?eventid=${data[0].id}`) // Redirects to the event view page using the eventId
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error:', error.message)
