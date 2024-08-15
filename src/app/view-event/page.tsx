@@ -45,24 +45,30 @@ const ViewEvent = () => {
             ),
           )
         } else {
-          const recentlyViewedEventsData: Event[] = JSON.parse(
-            localStorage.getItem('FindingATimeRecentlyViewed') as string,
-          )
           console.log(
             'Recently viewed events before: ',
-            recentlyViewedEventsData,
+            JSON.parse(
+              localStorage.getItem('FindingATimeRecentlyViewed') as string,
+            ),
           )
-          recentlyViewedEventsData.push(newEvent)
-          recentlyViewedEventsData.filter((event) => event.id !== newEvent.id)
-          recentlyViewedEventsData.sort((a, b) => {
+          let newRecentlyViewedEvents: Event[] = JSON.parse(
+            localStorage.getItem('FindingATimeRecentlyViewed') as string,
+          )
+          newRecentlyViewedEvents = newRecentlyViewedEvents.filter((event) => {
+            return event.id !== newEvent.id
+          })
+          newRecentlyViewedEvents.push(newEvent)
+          newRecentlyViewedEvents = newRecentlyViewedEvents.sort((a, b) => {
             return (
               new Date(b.viewTime).getTime() - new Date(a.viewTime).getTime()
             )
           })
-          console.log(
-            'Recently viewed events after: ',
-            recentlyViewedEventsData,
+          console.log('Recently viewed events after: ', newRecentlyViewedEvents)
+          localStorage.setItem(
+            'FindingATimeRecentlyViewed',
+            JSON.stringify(newRecentlyViewedEvents),
           )
+          setRecentlyViewedEvents(newRecentlyViewedEvents)
         }
       })
       .catch((error) => {
