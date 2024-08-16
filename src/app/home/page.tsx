@@ -70,10 +70,13 @@ export default function Index() {
             {events.length > 0 &&
               events.map((event) => (
                 <EventCard
+                  eventId={event.id}
                   title={event.title}
                   starttime={event.starttime}
                   endtime={event.endtime}
                   key={event.id}
+                  date={null}
+                  days={null}
                 />
               ))}{' '}
           </div>{' '}
