@@ -73,7 +73,6 @@ export default function CreateEvent() {
       })
     }
 
-
     try {
       const data = await addUserCreateEvent(
         title,

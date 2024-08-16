@@ -1,5 +1,16 @@
 import { UUID } from 'crypto'
 
+export interface Attendee {
+  users: { name: string }
+  timesegments: {
+    [key: string]: {
+      beginning: string
+      end: string
+      type: string
+    }
+  }
+}
+
 export async function getAttendees(eventid: UUID) {
   return fetch(`/api/attendees?eventid=${eventid}`, {
     method: 'GET',
