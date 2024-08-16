@@ -10,6 +10,17 @@ interface GridProps {
   mode: string
   config: string[]
   setConfig: React.Dispatch<React.SetStateAction<string[]>>
+  responders?: {
+    user: { name: string }
+    timesegments: {
+      [key: string]: {
+        beginning: string
+        end: string
+        type: string
+      }[]
+    }
+  }[]
+  onCellHover?: (day: string, time: string) => void // Callback function when hovering over a cell
 }
 
 const Grid = ({
@@ -19,6 +30,8 @@ const Grid = ({
   mode,
   config,
   setConfig,
+  responders,
+  onCellHover,
 }: GridProps) => {
   // Generate time array for row headings
   const timeArray = generateTimeRange(earliestTime, latestTime)
@@ -37,15 +50,19 @@ const Grid = ({
   }
 
   const [grid, setGrid] = useState(initialGrid)
-  const [isSelecting, setIsSelecting] = useState(false)
+  const [isSelecting, setIsSelecting] = useState(false) // When user is selecting cells
   const [dates, setDates] = useState<string[]>([])
+  const [hoveredCell, setHoveredCell] = useState<{
+    // hovered cell on grid used for styling
+    rowIndex: number
+    colIndex: number
+  } | null>(null)
 
-  // Update grid dimensions when daysOfWeek changes
+  // Populate the grid with creator's availability times saved in the database (view-event)
   useEffect(() => {
-    setGrid(initialGrid())
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      config = config.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+      //const sortedConfig = config.sort((a, b) => order.indexOf(a) - order.indexOf(b))
       setDates(config)
     } else {
       // Sort dates in ascending order
@@ -59,12 +76,56 @@ const Grid = ({
       )
       setDates(newConfig)
     }
-  }, [config.length, timeArray.length])
+
+    // Only populate grid if in view mode and availabilityTimes is not empty
+    if (!isAvailable && responders) {
+      const newGrid = initialGrid()
+
+      // loop through each day and each responder's timesegments
+      config.forEach((day, colIndex) => {
+        responders?.forEach((responder) => {
+          const times = responder.timesegments[day] || []
+          times.forEach((timeSlot) => {
+            const startIndex = timeArray.indexOf(timeSlot.beginning)
+            let endIndex = timeArray.indexOf(timeSlot.end)
+
+            // Handle case where end time is not found in the timeArray (endIndex being -1)
+            if (endIndex === -1) {
+              endIndex = timeArray.length // Set to the end of the timeArray
+            }
+
+            // Check if the start and end index are valid
+            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+              for (let i = startIndex; i < endIndex; i++) {
+                // Instead of just setting to true, increment a counter
+                newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
+              }
+            }
+          })
+        })
+      })
+      setGrid(newGrid)
+    } else {
+      // initialize grid when dimensions change when filling in event form (create-event)
+      setGrid(initialGrid())
+    }
+  }, [
+    isAvailable,
+    config.length,
+    timeArray.length,
+    earliestTime,
+    latestTime,
+    responders,
+    config.length,
+    timeArray.length,
+  ])
 
   // Function is called when the mouse is pressed down on a cell
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
-    if (!isAvailable) return
-    console.log(`Mouse Down: Row ${rowIndex}, Col ${colIndex}`)
+    if (!isAvailable) {
+      setHoveredCell({ rowIndex, colIndex })
+      return
+    }
     setIsSelecting(true)
     toggleCell(rowIndex, colIndex)
   }
@@ -74,29 +135,47 @@ const Grid = ({
     the mouse button is pressed 
   */
   const handleMouseEnter = (rowIndex: number, colIndex: number) => {
-    if (!isAvailable) return
+    if (!isAvailable) {
+      setHoveredCell({ rowIndex, colIndex })
+      if (onCellHover) {
+        // Only call onCellHover if it's provided
+        onCellHover(config[colIndex], timeArray[rowIndex])
+      }
+    }
     if (isSelecting) {
-      console.log(`Mouse Enter: Row ${rowIndex}, Col ${colIndex}`)
       toggleCell(rowIndex, colIndex)
     }
   }
 
   // Function is called when the mouse button is released
   const handleMouseUp = () => {
-    console.log('Mouse Up')
     setIsSelecting(false)
+    // Only clear the hovered cell if in selection mode
+    if (isAvailable) {
+      setHoveredCell(null)
+    }
+  }
+
+  // Function to handle when the mouse leaves the grid area
+  const handleMouseLeaveGrid = () => {
+    if (!isAvailable) {
+      setHoveredCell(null) // Clear hovered cell when mouse leaves grid in view mode
+    }
+
+    if (onCellHover) {
+      onCellHover('', '') // Clear hovered cell when mouse leaves grid
+    }
   }
 
   // Function toggles the value of a cell
   const toggleCell = (rowIndex: number, colIndex: number) => {
-    console.log(`Toggling Cell: Row ${rowIndex}, Col ${colIndex}`)
     const newGrid = [...grid]
     newGrid[rowIndex][colIndex] = !newGrid[rowIndex][colIndex]
     setGrid(newGrid)
   }
 
   return (
-    <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+    <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeaveGrid}>
       <div
         className="grid-container"
         style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}
@@ -144,37 +223,33 @@ const Grid = ({
           {/* Main Grid body cells for selecting and deselecting */}
           <div
             className={`grid h-full border border-gray-300 ${
-              isAvailable ? 'bg-red-50' : '' //in selection mode, background is red
+              isAvailable ? 'bg-red-50' : ''
             }`}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
               gridTemplateRows: `repeat(${dimensions.height}, 1fr)`,
               width: '100%',
-              height: `${dimensions.height * 64}px`,
+              height: `${dimensions.height * 64 + 1}px`, // 64px height per row and add 1px to height to account for border
             }}
+            onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
             {grid.map((row, rowIndex) =>
               row.map((isSelected, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-16 ${isSelected ? 'bg-emerald-300' : ''} ${
-                    isAvailable
-                      ? colIndex < dimensions.width - 1
-                        ? 'border-r border-gray-300' // Darker border color when available
-                        : ''
-                      : colIndex < dimensions.width - 1
-                        ? 'border-r border-gray-200' // Default border color
-                        : ''
+                  className={`flex h-16 items-center justify-center border-[0.5px] border-gray-200 ${
+                    isSelected ? 'bg-emerald-300' : ''
                   } ${
-                    isAvailable
-                      ? rowIndex < dimensions.height - 1
-                        ? 'border-b border-gray-300' // Darker border color when available
-                        : ''
-                      : rowIndex < dimensions.height - 1
-                        ? 'border-b border-gray-200' // Default border color
-                        : ''
-                  } cursor-pointer`}
+                    // Change cursor to pointer if grid is selectable
+                    isAvailable ? 'cursor-pointer' : 'cursor-default'
+                  } ${
+                    // Add border-dashed to cell if it is the hovered cell
+                    hoveredCell?.rowIndex === rowIndex &&
+                    hoveredCell?.colIndex === colIndex
+                      ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
+                      : ''
+                  }`}
                   onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
                   onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
                 ></div>
