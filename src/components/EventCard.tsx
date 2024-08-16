@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { UUID } from 'crypto'
 
 interface EventCardProps {
-  eventid: UUID
+  eventId: UUID
   title: string
   starttime: string
   endtime: string
@@ -11,7 +11,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({
-  eventid,
+  eventId,
   title,
   starttime,
   endtime,
@@ -19,7 +19,7 @@ export default function EventCard({
   days,
 }: EventCardProps) {
   return (
-    <Link href={`/view-event?eventid=${eventid}`}>
+    <Link href={`/view-event?eventId=${eventId}`}>
       <div className="flex h-48 flex-col justify-between rounded-md bg-white p-4 shadow-lg">
         <div>
           <h2 className="text-lg font-bold">{title}</h2>

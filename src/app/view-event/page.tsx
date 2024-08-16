@@ -9,16 +9,16 @@ import { Event } from '@/utils/eventsUtils'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
-  const eventid = searchParams.get('eventid')
+  const eventId = searchParams.get('eventId')
   const [event, setEvent] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
 
   useEffect(() => {
-    getEvent(eventid as UUID)
+    getEvent(eventId as UUID)
       .then((data) => {
         const newEvent: Event = {
-          id: eventid as UUID,
+          id: eventId as UUID,
           viewTime: new Date(),
           title: data[0].title,
           starttime: data[0].starttime,
@@ -31,19 +31,7 @@ const ViewEvent = () => {
             JSON.stringify([newEvent]),
           )
           setRecentlyViewedEvents([newEvent])
-          console.log(
-            'Recently viewed events first: ',
-            JSON.parse(
-              localStorage.getItem('FindingATimeRecentlyViewed') as string,
-            ),
-          )
         } else {
-          console.log(
-            'Recently viewed events before: ',
-            JSON.parse(
-              localStorage.getItem('FindingATimeRecentlyViewed') as string,
-            ),
-          )
           let newRecentlyViewedEvents: Event[] = JSON.parse(
             localStorage.getItem('FindingATimeRecentlyViewed') as string,
           )
@@ -56,7 +44,6 @@ const ViewEvent = () => {
               new Date(b.viewTime).getTime() - new Date(a.viewTime).getTime()
             )
           })
-          console.log('Recently viewed events after: ', newRecentlyViewedEvents)
           localStorage.setItem(
             'FindingATimeRecentlyViewed',
             JSON.stringify(newRecentlyViewedEvents),
@@ -67,15 +54,14 @@ const ViewEvent = () => {
       .catch((error) => {
         setError('No event found')
       })
-    console.log('eventid:', eventid)
-  }, [eventid])
+  }, [eventId])
 
   return (
     <div>
       <EventView />
       {event && (
         <EventCard
-          eventid={event.id}
+          eventId={event.id}
           title={event.title}
           starttime={event.starttime}
           endtime={event.endtime}

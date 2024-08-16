@@ -45,8 +45,8 @@ export async function insertEvent(
   return response.json() // Returns the JSON response including the eventId
 }
 
-export async function getEvent(eventid: UUID) {
-  return fetch(`/api/events?eventid=${eventid}`, {
+export async function getEvent(eventId: UUID) {
+  return fetch(`/api/events?eventId=${eventId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

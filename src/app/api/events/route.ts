@@ -10,14 +10,14 @@ export async function GET(request: Request) {
   const supabase = createServerClient(cookieStore)
 
   const url = new URL(request.url)
-  const creatorid = url.searchParams.get('creatorid')
-  const eventid = url.searchParams.get('eventid')
+  const creatorId = url.searchParams.get('creatorId')
+  const eventId = url.searchParams.get('eventId')
 
-  if (creatorid !== null) {
+  if (creatorId !== null) {
     const { data, error } = await supabase
       .from('events')
       .select()
-      .eq('creator', creatorid)
+      .eq('creator', creatorId)
 
     if (error) {
       return NextResponse.json({
@@ -26,11 +26,11 @@ export async function GET(request: Request) {
       })
     }
     return NextResponse.json(data)
-  } else if (eventid !== null) {
+  } else if (eventId !== null) {
     const { data, error } = await supabase
       .from('events')
       .select()
-      .eq('id', eventid)
+      .eq('id', eventId)
 
     if (error) {
       return NextResponse.json({
