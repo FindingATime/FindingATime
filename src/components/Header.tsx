@@ -1,8 +1,17 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import CalendarIcon from '../app/CalendarIcon.jpeg'
 
 export default function Header() {
+  const [currentPath, setCurrentPath] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname)
+    }
+  }, [])
+
   return (
     <header className="w-full bg-base-200 p-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
@@ -17,13 +26,17 @@ export default function Header() {
           </Link>
         </div>
         <div>
-          <Link href="/home">
-            <button className="btn btn-primary ml-3">Dashboard</button>
-          </Link>
-          <Link href="/create-event">
-            <button className="btn btn-primary ml-3">Create Event</button>
-          </Link>
-          <Link href="#FAQ">
+          {currentPath !== '/home' && (
+            <Link href="/home">
+              <button className="btn btn-primary ml-3">Dashboard</button>
+            </Link>
+          )}
+          {currentPath !== '/create-event' && (
+            <Link href="/create-event">
+              <button className="btn btn-primary ml-3">Create Event</button>
+            </Link>
+          )}
+          <Link href="/#FAQ">
             <button className="btn btn-primary ml-3">FAQ</button>
           </Link>
         </div>

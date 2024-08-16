@@ -6,6 +6,7 @@ import EventCard from '@/components/EventCard'
 import { useSearchParams } from 'next/navigation'
 import { getEvent } from '@/utils/eventsUtils'
 import { Event } from '@/utils/eventsUtils'
+import Header from '@/components/Header'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -57,19 +58,22 @@ const ViewEvent = () => {
   }, [eventId])
 
   return (
-    <div>
-      <EventView />
-      {event && (
-        <EventCard
-          eventId={event.id}
-          title={event.title}
-          starttime={event.starttime}
-          endtime={event.endtime}
-          days={null}
-          date={null}
-          key={event.id}
-        />
-      )}
+    <div className="w-full">
+      <Header />
+      <div>
+        <EventView />
+        {event && (
+          <EventCard
+            eventId={event.id}
+            title={event.title}
+            starttime={event.starttime}
+            endtime={event.endtime}
+            days={null}
+            date={null}
+            key={event.id}
+          />
+        )}
+      </div>
     </div>
   )
 }

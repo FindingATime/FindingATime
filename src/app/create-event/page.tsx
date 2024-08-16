@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import EventForm from '@/components/EventForm'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
+import Header from '@/components/Header'
 
 export default function CreateEvent() {
   const [title, setTitle] = useState('')
@@ -109,113 +110,116 @@ export default function CreateEvent() {
   }
 
   return (
-    <div //main screen
-      className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
-    >
-      <section //Left side container (Event form)
-        className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
+    <div className="w-full">
+      <Header />
+      <div //main screen
+        className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
       >
-        <EventForm
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          location={location}
-          setLocation={setLocation}
-          earliestTime={earliestTime}
-          setEarliestTime={setEarliestTime}
-          latestTime={latestTime}
-          setLatestTime={setLatestTime}
-          mode={mode}
-          setMode={setMode}
-          config={config}
-          setConfig={setConfig}
-          timezone={timezone}
-          setTimezone={setTimezone}
-        />
-
-        <div //button container for positioning button
-          className="mx-4 flex justify-center pt-8"
+        <section //Left side container (Event form)
+          className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
         >
-          <button
-            className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
-            onClick={openModal}
+          <EventForm
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            location={location}
+            setLocation={setLocation}
+            earliestTime={earliestTime}
+            setEarliestTime={setEarliestTime}
+            latestTime={latestTime}
+            setLatestTime={setLatestTime}
+            mode={mode}
+            setMode={setMode}
+            config={config}
+            setConfig={setConfig}
+            timezone={timezone}
+            setTimezone={setTimezone}
+          />
+
+          <div //button container for positioning button
+            className="mx-4 flex justify-center pt-8"
           >
-            Add Availability
-          </button>
+            <button
+              className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+              onClick={openModal}
+            >
+              Add Availability
+            </button>
 
-          <dialog ref={dialogRef} id="username_modal" className="modal">
-            <div className="modal-box bg-white focus:outline-white ">
-              <h3 className="py-4 text-lg font-bold">Sign In</h3>
+            <dialog ref={dialogRef} id="username_modal" className="modal">
+              <div className="modal-box bg-white focus:outline-white ">
+                <h3 className="py-4 text-lg font-bold">Sign In</h3>
 
-              <input
-                type="text"
-                placeholder="Enter Your Name"
-                className="input input-bordered w-full max-w-xs bg-white py-4"
-                onChange={(e) => {
-                  setUserName(e.target.value)
-                }} // Update isAvailable to true when name is entered
-              />
+                <input
+                  type="text"
+                  placeholder="Enter Your Name"
+                  className="input input-bordered w-full max-w-xs bg-white py-4"
+                  onChange={(e) => {
+                    setUserName(e.target.value)
+                  }} // Update isAvailable to true when name is entered
+                />
 
-              <div className="modal-action">
-                <form method="dialog">
-                  <button
-                    className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
-                    onClick={() => {
-                      setIsAvailable(true)
-                      setIsButtonsVisible(true) // Show buttons when user signs in
-                    }}
-                  >
-                    Sign In
-                  </button>
-                </form>
+                <div className="modal-action">
+                  <form method="dialog">
+                    <button
+                      className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+                      onClick={() => {
+                        setIsAvailable(true)
+                        setIsButtonsVisible(true) // Show buttons when user signs in
+                      }}
+                    >
+                      Sign In
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-          </dialog>
-        </div>
-      </section>
-
-      <section //Middle side container (Availability Grid)
-        className="w-full gap-8 md:w-[57%]"
-      >
-        <Grid
-          earliestTime={earliestTime}
-          latestTime={latestTime}
-          isAvailable={isAvailable}
-          mode={mode}
-          config={config}
-          setConfig={setConfig}
-        />
-
-        {isButtonsVisible && ( // Conditionally render buttons section
-          <div //button container for positioning "Save" and "Cancel" buttons
-            className="flex flex-row justify-center gap-4 pt-8 "
-          >
-            <button
-              className="btn btn-outline rounded-full px-4 py-2 text-red-400 hover:!border-red-400 hover:bg-red-300"
-              onClick={() => {
-                setIsAvailable(false)
-                setIsButtonsVisible(false)
-              }} // Set availability to false when user cancels
-            >
-              Cancel
-            </button>
-
-            <button
-              className="btn btn-primary rounded-full px-4 py-2 text-white"
-              onClick={handleSubmit}
-            >
-              Create Event
-            </button>
+            </dialog>
           </div>
-        )}
-      </section>
+        </section>
 
-      <section //Right side container (Responses)
-        className="w-full py-8 md:w-[13%]"
-      >
-        <Responses responders={responders} />
-      </section>
+        <section //Middle side container (Availability Grid)
+          className="w-full gap-8 md:w-[57%]"
+        >
+          <Grid
+            earliestTime={earliestTime}
+            latestTime={latestTime}
+            isAvailable={isAvailable}
+            mode={mode}
+            config={config}
+            setConfig={setConfig}
+          />
+
+          {isButtonsVisible && ( // Conditionally render buttons section
+            <div //button container for positioning "Save" and "Cancel" buttons
+              className="flex flex-row justify-center gap-4 pt-8 "
+            >
+              <button
+                className="btn btn-outline rounded-full px-4 py-2 text-red-400 hover:!border-red-400 hover:bg-red-300"
+                onClick={() => {
+                  setIsAvailable(false)
+                  setIsButtonsVisible(false)
+                }} // Set availability to false when user cancels
+              >
+                Cancel
+              </button>
+
+              <button
+                className="btn btn-primary rounded-full px-4 py-2 text-white"
+                onClick={handleSubmit}
+              >
+                Create Event
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section //Right side container (Responses)
+          className="w-full py-8 md:w-[13%]"
+        >
+          <Responses responders={responders} />
+        </section>
+      </div>
     </div>
   )
 }
