@@ -1,77 +1,29 @@
 'use client'
 import { UUID } from 'crypto'
+import { Attendee, getAttendees } from '@/utils/attendeesUtils'
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { getEvent } from '@/utils/eventsUtils'
+import { Event } from '@/utils/eventsUtils'
 
 import EventView from '@/components/EventView'
 import EventCard from '@/components/EventCard'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 
-// Placeholder data for responders, including names and availability times
-interface Attendee {
-  user: { name: string }
-  timesegments: {
-    [key: string]: {
-      beginning: string
-      end: string
-      type: string
-    }[]
-  }
-}
-
-// gets attendee data from the API and formats it
-const getAttendeeData = (attendees: Attendee[]) => {
-  return attendees.map((attendee) => ({
-    user: attendee.user,
-    timesegments: attendee.timesegments,
-  }))
-}
-
-const placeholderResponders: Attendee[] = [
-  {
-    user: { name: 'John Doe' },
-    timesegments: {
-      Sun: [],
-      Fri: [{ beginning: '2:00 PM', end: '5:00 PM', type: 'Regular' }],
-      Sat: [
-        { beginning: '1:00 PM', end: '2:00 PM', type: 'Regular' },
-        { beginning: '5:00 PM', end: '7:00 PM', type: 'Regular' },
-      ],
-    },
-  },
-  {
-    user: { name: 'Jane Smith' },
-    timesegments: {
-      Sun: [{ beginning: '1:00 PM', end: '4:00 PM', type: 'Regular' }],
-      Fri: [{ beginning: '2:00 PM', end: '6:00 PM', type: 'Regular' }],
-      Sat: [{ beginning: '3:00 PM', end: '5:00 PM', type: 'Regular' }],
-    },
-  },
-  {
-    user: { name: 'Bob Johnson' },
-    timesegments: {
-      Sun: [{ beginning: '3:00 PM', end: '5:00 PM', type: 'Regular' }],
-      Fri: [{ beginning: '4:00 PM', end: '7:00 PM', type: 'Regular' }],
-      Sat: [{ beginning: '2:00 PM', end: '6:00 PM', type: 'Regular' }],
-    },
-  },
-]
-
 const ViewEvent = () => {
   const searchParams = useSearchParams()
   const eventId = searchParams.get('eventId')
-
-  const [events, setEvents] = useState<any[]>([])
+  const [event, setEvent] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
 
-  const [responders, setResponders] = useState<Attendee[]>(
-    getAttendeeData(placeholderResponders),
-  ) // Placeholder data for responders
+  const [responders, setResponders] = useState<Attendee[]>([])
+
   const [hoveredCell, setHoveredCell] = useState<{
     day: string
     time: string
@@ -86,50 +38,82 @@ const ViewEvent = () => {
   const convertConfigToArray = (config: {
     [key: string]: boolean
   }): string[] => {
-    const daysOfWeekArray: string[] = []
-    for (const day in config) {
-      if (config[day]) {
-        daysOfWeekArray.push(day)
-      }
+    if (!config || typeof config !== 'object') {
+      console.error('Invalid config:', config)
+      return []
     }
-    return daysOfWeekArray
+    return Object.keys(config).filter((day) => config[day])
+  }
+
+  // gets attendee data from the API and formats it
+  const formatAttendeeData = (attendees: Attendee[]): Attendee[] => {
+    return attendees.map((attendee) => ({
+      users: attendee.users, // Ensure this matches the expected structure
+      timesegments: attendee.timesegments, // Ensure this matches the expected structure
+    }))
   }
 
   useEffect(() => {
-    const getTheEvent = async () => {
-      fetch(`/api/events?eventId=${eventId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    getEvent(eventId as UUID)
+      .then(async (data) => {
+        const newEvent: Event = {
+          id: eventId as UUID,
+          viewTime: new Date(),
+          title: data[0].title,
+          starttime: data[0].starttime,
+          endtime: data[0].endtime,
+          config: data[0].config || {},
+          mode: data[0].mode || 'weekly', // TODO: need to modify to include both weekly & specific dates
+        }
+
+        setEvent(newEvent)
+        if (!localStorage.getItem('FindingATimeRecentlyViewed')) {
+          localStorage.setItem(
+            'FindingATimeRecentlyViewed',
+            JSON.stringify([newEvent]),
+          )
+          setRecentlyViewedEvents([newEvent])
+        } else {
+          let newRecentlyViewedEvents: Event[] = JSON.parse(
+            localStorage.getItem('FindingATimeRecentlyViewed') as string,
+          )
+          newRecentlyViewedEvents = newRecentlyViewedEvents.filter((event) => {
+            return event.id !== newEvent.id
+          })
+          newRecentlyViewedEvents.push(newEvent)
+          newRecentlyViewedEvents = newRecentlyViewedEvents.sort((a, b) => {
+            return (
+              new Date(b.viewTime).getTime() - new Date(a.viewTime).getTime()
+            )
+          })
+          localStorage.setItem(
+            'FindingATimeRecentlyViewed',
+            JSON.stringify(newRecentlyViewedEvents),
+          )
+          setRecentlyViewedEvents(newRecentlyViewedEvents)
+        }
       })
-        .then((response) => {
-          if (!response.ok) {
-            return response.json().then((err) => {
-              throw new Error(err.message)
-            })
-          }
-          return response.json()
-        })
-        .then((data) => {
-          setEvents(data)
-        })
-        .catch((error) => {
-          setError(error.message)
-          console.error('Error:', error.message)
-        })
-    }
+      .catch((error) => {
+        setError('No event found')
+      })
 
-    if (eventId) {
-      getTheEvent()
-    } else {
-      setError('No event found')
-    }
+    // Fetch attendees data
+    getAttendees(eventId as UUID)
+      .then((data) => {
+        if (data) {
+          //format attendee data
+          const formattedData = formatAttendeeData(data)
+          setResponders(formattedData) // Set the responders state with the fetched data
+        } else {
+          setError('No attendees found')
+        }
+      })
+
+      .catch((error) => {
+        console.error('Error fetching attendees:', error.message)
+        setError('Failed to load attendees')
+      })
   }, [eventId])
-
-  if (error) {
-    return <div>Error: {error}</div>
-  }
 
   return (
     <div //main screen
@@ -138,14 +122,17 @@ const ViewEvent = () => {
       <section //Left side container (Event form)
         className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
       >
-        {events.map((event) => (
+        {event && (
           <EventCard // Event Card to display Event Details
+            eventId={event.id}
             title={event.title}
             starttime={event.starttime}
             endtime={event.endtime}
+            days={null}
+            date={null}
             key={event.id}
           />
-        ))}
+        )}
 
         <div //button container for positioning button
           className="mx-4 flex justify-center pt-8"
@@ -158,7 +145,7 @@ const ViewEvent = () => {
       <section //Middle side container (Availability Grid)
         className="w-full gap-8 md:w-[57%]"
       >
-        {events.map((event) => (
+        {event && (
           <Grid // Availability Grid
             earliestTime={event.starttime}
             latestTime={event.endtime}
@@ -170,7 +157,7 @@ const ViewEvent = () => {
             setConfig={event.setConfig}
             onCellHover={handleCellHover}
           />
-        ))}
+        )}
         <div //button container for positioning "Save" and "Cancel" buttons
           className="flex flex-row justify-center gap-4 pt-8 "
         >

@@ -3,7 +3,7 @@ import React from 'react'
 import { times } from '@/utils/timeUtils' // Import these from where they're defined
 
 interface Responder {
-  user: { name: string }
+  users: { name: string }
   timesegments: {
     [key: string]: {
       beginning: string
@@ -57,7 +57,7 @@ const Responses = ({ responders, hoveredCell }: ResponsesProps) => {
                 : 'text-gray-500'
             }
           >
-            {responder.user.name}
+            {responder.users.name}
           </li>
         ))}
       </ul>

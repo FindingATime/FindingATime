@@ -11,7 +11,7 @@ interface GridProps {
   config: string[]
   setConfig: React.Dispatch<React.SetStateAction<string[]>>
   responders?: {
-    user: { name: string }
+    users: { name: string }
     timesegments: {
       [key: string]: {
         beginning: string
@@ -60,6 +60,9 @@ const Grid = ({
 
   // Populate the grid with creator's availability times saved in the database (view-event)
   useEffect(() => {
+    console.log('Config: ', config)
+    console.log('Responders: ', responders)
+
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       //const sortedConfig = config.sort((a, b) => order.indexOf(a) - order.indexOf(b))
@@ -77,14 +80,21 @@ const Grid = ({
       setDates(newConfig)
     }
 
-    // Only populate grid if in view mode and availabilityTimes is not empty
+    // Only populate grid if in view mode and responder's time segments is not empty
     if (!isAvailable && responders) {
       const newGrid = initialGrid()
+
+      // Debugging: Log initial grid
+      console.log('Initial Grid:', newGrid)
 
       // loop through each day and each responder's timesegments
       config.forEach((day, colIndex) => {
         responders?.forEach((responder) => {
           const times = responder.timesegments[day] || []
+
+          // Debugging: Log day and times
+          console.log(`Day: ${day}, Times:`, times)
+
           times.forEach((timeSlot) => {
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
@@ -93,6 +103,11 @@ const Grid = ({
             if (endIndex === -1) {
               endIndex = timeArray.length // Set to the end of the timeArray
             }
+
+            // Debugging: Log start and end indices
+            console.log(
+              `Time Slot: ${timeSlot.beginning} - ${timeSlot.end}, Start Index: ${startIndex}, End Index: ${endIndex}`,
+            )
 
             // Check if the start and end index are valid
             if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
@@ -116,8 +131,6 @@ const Grid = ({
     earliestTime,
     latestTime,
     responders,
-    config.length,
-    timeArray.length,
   ])
 
   // Function is called when the mouse is pressed down on a cell

@@ -1,5 +1,15 @@
 import { UUID } from 'crypto'
 
+export interface Event {
+  id: UUID
+  viewTime: Date
+  title: string
+  starttime: string
+  endtime: string
+  config: { [key: string]: boolean }
+  mode: string
+}
+
 export async function insertEvent(
   title: string,
   description: string,
@@ -35,4 +45,27 @@ export async function insertEvent(
   }
 
   return response.json() // Returns the JSON response including the eventId
+}
+
+export async function getEvent(eventId: UUID) {
+  return fetch(`/api/events?eventId=${eventId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((err) => {
+          throw new Error(err.message)
+        })
+      }
+      return response.json()
+    })
+    .then((data) => {
+      return data
+    })
+    .catch((error) => {
+      return error
+    })
 }

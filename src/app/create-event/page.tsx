@@ -16,7 +16,7 @@ export default function CreateEvent() {
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
-  const [config, setConfig] = useState<string[]>([]) // daysOfWeek
+  const [config, setConfig] = useState<string[]>([])
   const [timezone, setTimezone] = useState('')
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
@@ -28,7 +28,7 @@ export default function CreateEvent() {
   //added router to redirect to view-event page after creating event
   const router = useRouter()
 
-  // Revisit: append local to remote api call for selecting all responder usernames
+  // TODO: append local to remote api call for selecting all responder usernames
   /*
   const handleSaveResponse = () => {
     if (userName) {
@@ -95,8 +95,6 @@ export default function CreateEvent() {
     // handleSaveResponse() // Call handleSaveResponse to save the response
     setIsAvailable(false) // Set availability to false when user creates event/saves their availability
     setIsButtonsVisible(false) // Hide buttons after user creates event
-
-    // print earliest time from event
   }
 
   // Function to open modal for after clicking "Sign In"
