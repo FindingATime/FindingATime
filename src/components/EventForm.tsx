@@ -217,12 +217,12 @@ const EventForm = ({
             </div>
           ) : (
             <div //Days of the week
-              className="join w-full"
+              className="join flex w-full space-x-1.5"
             >
               {days.map((day) => (
                 <input
                   key={day}
-                  className="btn join-item border-gray-300 bg-white"
+                  className="btn btn-circle btn-sm h-10 w-10 border-gray-300 bg-white text-sm font-normal"
                   type="checkbox"
                   name="options"
                   aria-label={day}
