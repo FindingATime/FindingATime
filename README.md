@@ -20,7 +20,6 @@ Run `pnpm run dev`
 
 Visit local <a href="http://localhost:3000"><strong>Site</strong></a> ·
 
-
 ## Documentation
 
 ### Requirements
