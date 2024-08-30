@@ -11,10 +11,16 @@ import { Suspense, useEffect, useState } from 'react'
 import { UUID } from 'crypto'
 import Link from 'next/link'
 import { Event, getMyEvents } from '@/utils/eventsUtils'
+import { getNumRespondents } from '@/utils/attendeesUtils'
 
 export default function Index() {
   const [myEvents, setMyEvents] = useState<Event[]>([])
+  const [myEventIds, setMyEventIds] = useState<UUID[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([])
+  const [upcomingEventIds, setUpcomingEventIds] = useState<UUID[]>([])
+  const [eventRespondentsCountDict, setEventRespondentsCountDict] = useState<{
+    [key: string]: number
+  }>({})
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -22,7 +28,24 @@ export default function Index() {
       getMyEvents(localStorage.getItem('username') as UUID)
         .then((data) => {
           setMyEvents(data)
-          setIsLoading(false)
+          // set up event ids array using data returned
+          const myEventIdsArray = data.map((event: Event) => event.id)
+          setMyEventIds(myEventIdsArray)
+          getNumRespondents(myEventIdsArray).then((numRespondentsArray) => {
+            let newObj: { [key: string]: number } = {}
+            numRespondentsArray.forEach(
+              (numRespondents: { [key: string]: UUID }, index: any) => {
+                if (numRespondents.eventid in newObj) {
+                  newObj[numRespondents.eventid as string] =
+                    newObj[numRespondents.eventid as string] + 1
+                } else {
+                  newObj[numRespondents.eventid as string] = 1
+                }
+              },
+            )
+            setEventRespondentsCountDict(newObj)
+            setIsLoading(false)
+          })
         })
         .catch((error) => {
           console.error('Error:', error.message)
@@ -33,11 +56,15 @@ export default function Index() {
     }
 
     if (localStorage.getItem('FindingATimeRecentlyViewed')) {
-      setUpcomingEvents(
-        JSON.parse(
-          localStorage.getItem('FindingATimeRecentlyViewed') as string,
-        ) as Event[],
+      const recentlyViewedEventsArray = JSON.parse(
+        localStorage.getItem('FindingATimeRecentlyViewed') as string,
+      ) as Event[]
+      setUpcomingEvents(recentlyViewedEventsArray)
+
+      const upcomingEventIdsArray = recentlyViewedEventsArray.map(
+        (event: Event) => event.id,
       )
+      setUpcomingEventIds(upcomingEventIdsArray)
     }
   }, [])
 
@@ -68,6 +95,9 @@ export default function Index() {
                       endtime={event.endtime}
                       timezone={event.timezone}
                       location={event.location}
+                      numRespondents={
+                        eventRespondentsCountDict[event.id as string]
+                      }
                       key={event.id}
                     />
                   ))}

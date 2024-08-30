@@ -10,6 +10,7 @@ interface EventCardProps {
   endtime: string
   location: string
   timezone: string
+  numRespondents?: number
 }
 
 export default function EventCard({
@@ -19,39 +20,22 @@ export default function EventCard({
   endtime,
   location,
   timezone,
+  numRespondents,
 }: EventCardProps) {
-  const [numRespondents, setNumRespondents] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    getNumRespondents(eventId).then((data) => {
-      if (data) {
-        setNumRespondents(data)
-      }
-      setIsLoading(false)
-    })
-  }, [])
-
   return (
     <Link href={`/view-event?eventId=${eventId}`}>
       <div className="flex h-48 flex-col justify-between rounded-md bg-white p-4 shadow-lg">
-        {isLoading ? (
-          <div className="flex h-full items-center justify-center">
-            <p>Loading...</p>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-lg font-bold">{title}</h2>
-            <p>
-              Start Time: {starttime} {timezone}
-            </p>
-            <p>
-              End Time: {endtime} {timezone}
-            </p>
-            <p>Location: {location}</p>
-            <p>Number of Respondents: {numRespondents}</p>
-          </div>
-        )}
+        <div>
+          <h2 className="text-lg font-bold">{title}</h2>
+          <p>
+            Start Time: {starttime} {timezone}
+          </p>
+          <p>
+            End Time: {endtime} {timezone}
+          </p>
+          <p>Location: {location}</p>
+          {numRespondents && <p>Number of Respondents: {numRespondents}</p>}
+        </div>
       </div>
     </Link>
   )

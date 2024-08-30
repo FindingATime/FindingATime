@@ -125,8 +125,12 @@ export async function editAttendee(
     })
 }
 
-export async function getNumRespondents(eventid: UUID) {
-  return fetch(`/api/attendees/count?eventid=${eventid}`, {
+export async function getNumRespondents(eventids: UUID[]) {
+  const encodedEventIds = encodeURIComponent(
+    eventids.map((id) => encodeURIComponent(id)).join(','),
+  )
+  console.log('Encoded event ids:', encodedEventIds)
+  return fetch(`/api/attendees/count?eventids=${encodedEventIds}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
