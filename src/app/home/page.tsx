@@ -66,6 +66,7 @@ export default function Index() {
                       title={event.title}
                       starttime={event.starttime}
                       endtime={event.endtime}
+                      timezone={event.timezone}
                       location={event.location}
                       key={event.id}
                     />
@@ -91,6 +92,7 @@ export default function Index() {
                     starttime={event.starttime}
                     endtime={event.endtime}
                     location={event.location}
+                    timezone={event.timezone}
                     key={event.id}
                   />
                   <div className="mb-4"></div>

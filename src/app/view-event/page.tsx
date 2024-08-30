@@ -89,6 +89,7 @@ const ViewEvent = () => {
           title: data[0].title,
           starttime: data[0].starttime,
           endtime: data[0].endtime,
+          timezone: data[0].timezone,
           location: data[0].location,
           config: data[0].config || {},
           mode: data[0].mode || 'weekly', // TODO: need to modify to include both weekly & specific dates
@@ -206,6 +207,7 @@ const ViewEvent = () => {
               starttime={event.starttime}
               endtime={event.endtime}
               location={event.location}
+              timezone={event.timezone}
               key={event.id}
             />
           )}

@@ -4,7 +4,7 @@ import { days, modeOptions } from '@/utils/dateUtils'
 import { useState } from 'react'
 import Calendar from 'react-calendar'
 // import 'react-calendar/dist/Calendar.css'
-import { times } from '@/utils/timeUtils'
+import { times, sortedTimeZones } from '@/utils/timeUtils'
 // import calendarstyles
 import '@/app/calendarStyles.css'
 
@@ -239,12 +239,11 @@ const EventForm = ({
           <option disabled value="">
             Timezone
           </option>
-          <option>PST (Pacific Standard Time)</option>
-          <option>EST (Eastern Standard Time)</option>
-          <option>GMT (Greenwich Mean Time)</option>
-          <option>CET (Central European Time)</option>
-          <option>IST (Indian Standard Time)</option>
-          <option>JST (Japan Standard Time)</option>
+          {sortedTimeZones.map(({ value, label }, key) => (
+            <option key={key} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </form>
     </>
