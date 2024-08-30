@@ -75,27 +75,24 @@ const EventForm = ({
       <form //Form to enter Event data (Title, Description...etc)
         className="flex w-full flex-col"
       >
-        {title === null && (
-          <p className="mt-0 p-0 text-error">Title is required</p>
-        )}
         <input //Event Title text input
           type="text"
           value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
-          className="input mb-6 w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
+          className="input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
         />
+        {title === null && (
+          <p className="mb-6 p-0 text-error">Title is required</p>
+        )}
 
         <textarea //Event Description text input
           value={description}
           placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="textarea textarea-bordered w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         ></textarea>
 
-        {location === null && (
-          <p className="mt-0 p-0 text-error">Location is required</p>
-        )}
         <input //Event Location text input
           type="text"
           value={location as string}
@@ -103,6 +100,9 @@ const EventForm = ({
           onChange={(e) => setLocation(e.target.value)}
           className="input mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         />
+        {location === null && (
+          <p className="mb-6 p-0 text-error">Location is required</p>
+        )}
 
         <div //Event EarliestTime to LatestTime row container
           className="flex w-full flex-row items-center gap-3"
@@ -210,14 +210,22 @@ const EventForm = ({
                   }
                 }}
                 tileClassName={({ activeStartDate, date, view }) => {
-                  if (Date.now() > date.getTime()) {
+                  const today = new Date()
+                  if (
+                    today.getTime() > date.getTime() &&
+                    !(
+                      today.getUTCDate() === date.getUTCDate() &&
+                      today.getUTCMonth() === date.getUTCMonth() &&
+                      today.getUTCFullYear() === date.getUTCFullYear()
+                    )
+                  ) {
                     return 'disabled'
                   }
+                  console.log('date.toString()', date.toString())
                   return view === 'month' && config?.includes(date.toString())
                     ? 'active'
                     : null
                 }}
-                view="month"
               />
 
               <p className="text-error">{passSpecificDaysLimitMessage}</p>

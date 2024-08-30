@@ -14,7 +14,6 @@ interface GridProps {
   }[]
   mode: string
   config: string[] | null
-  setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
   schedule: Schedule
   setSchedule: React.Dispatch<React.SetStateAction<Schedule>>
   userAvailability?: Schedule
@@ -29,7 +28,6 @@ const Grid = ({
   responders,
   mode,
   config,
-  setConfig,
   schedule,
   setSchedule,
   onCellHover,
