@@ -12,14 +12,14 @@ import Responses from '@/components/Responses'
 import Header from '@/components/Header'
 
 export default function CreateEvent() {
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState<string | null>('')
   const [description, setDescription] = useState('')
-  const [location, setLocation] = useState('')
+  const [location, setLocation] = useState<string | null>('')
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
-  const [config, setConfig] = useState<string[]>([])
-  const [timezone, setTimezone] = useState('')
+  const [config, setConfig] = useState<string[] | null>([])
+  const [timezone, setTimezone] = useState<string | null>('')
   const [schedule, setSchedule] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
@@ -73,19 +73,34 @@ export default function CreateEvent() {
       Sat: false,
       Sun: false,
     }
+    console.log('title', title)
+    console.log('location', location)
+    console.log('timezone', timezone)
+    if (title?.length === 0) {
+      setTitle(null)
+    }
+    if (location?.length === 0) {
+      setLocation(null)
+    }
+    if (timezone?.length === 0) {
+      setTimezone(null)
+    }
+    if (config?.length === 0) {
+      setConfig(null)
+    }
 
     const configJSON: { [key: string]: string[] } = {
       days: [],
     }
 
     if (mode === 'weekly') {
-      config.forEach((day) => {
+      config?.forEach((day) => {
         if (daysOfWeekJSON.hasOwnProperty(day)) {
           daysOfWeekJSON[day] = true
         }
       })
     } else {
-      config.forEach((day) => {
+      config?.forEach((day) => {
         configJSON.days.push(day)
       })
     }
@@ -93,12 +108,12 @@ export default function CreateEvent() {
     try {
       await addUserCreateEvent(
         userName,
-        title,
+        title as string,
         description,
         earliestTime,
         latestTime,
-        location,
-        timezone,
+        location as string,
+        timezone as string,
         mode,
         mode === 'weekly'
           ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}

@@ -13,8 +13,8 @@ interface GridProps {
     timesegments: Schedule
   }[]
   mode: string
-  config: string[]
-  setConfig: React.Dispatch<React.SetStateAction<string[]>>
+  config: string[] | null
+  setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
   schedule: Schedule
   setSchedule: React.Dispatch<React.SetStateAction<Schedule>>
   userAvailability?: Schedule
@@ -40,7 +40,7 @@ const Grid = ({
 
   // Grid dimensions
   const dimensions = {
-    width: config.length || 1, // default to 1 if daysOfWeek is empty
+    width: config?.length || 1, // default to 1 if daysOfWeek is empty
     height: timeArray.length - 1,
   }
 
@@ -53,7 +53,7 @@ const Grid = ({
 
   const [grid, setGrid] = useState(initialGrid)
   const [isSelecting, setIsSelecting] = useState(false) // When user is selecting cells
-  const [dates, setDates] = useState<string[]>([])
+  const [dates, setDates] = useState<string[] | null>([])
   const [hoveredCell, setHoveredCell] = useState<{
     // hovered cell on grid used for styling
     rowIndex: number
@@ -68,18 +68,18 @@ const Grid = ({
   useEffect(() => {
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      const sortedConfig = config.sort(
+      const sortedConfig = config?.sort(
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
-      setDates(sortedConfig)
+      setDates(sortedConfig as string[])
       // setDates(config)
       setSchedule({})
     } else {
       // Sort dates in ascending order
-      let newConfig = config
-      newConfig = config.sort(
+      let newConfig: string[] = config as string[]
+      newConfig = config?.sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-      )
+      ) as string[]
       newConfig = newConfig.map(
         (date) =>
           months[new Date(date).getMonth()] + ' ' + new Date(date).getDate(),
@@ -93,7 +93,7 @@ const Grid = ({
       const newGrid = initialGrid()
 
       // loop through each day and each responder's timesegments
-      config.forEach((day, colIndex) => {
+      config?.forEach((day, colIndex) => {
         responders?.forEach((responder) => {
           const times = responder.timesegments[day] || []
 
@@ -123,7 +123,7 @@ const Grid = ({
     }
   }, [
     isAvailable,
-    config.length,
+    config?.length,
     timeArray.length,
     earliestTime,
     latestTime,
@@ -147,7 +147,7 @@ const Grid = ({
   const handleMouseEnter = (rowIndex: number, colIndex: number) => {
     if (!isAvailable) {
       setHoveredCell({ rowIndex, colIndex })
-      if (onCellHover) {
+      if (onCellHover && config) {
         onCellHover(config[colIndex], timeArray[rowIndex])
       }
     }
@@ -185,7 +185,7 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
-    if (config[colIndex] in schedule) {
+    if (config && config[colIndex] in schedule) {
       let timeSegments = schedule[config[colIndex]]
 
       // Check if the time segment is already in the schedule
@@ -204,7 +204,7 @@ const Grid = ({
       }
 
       schedule[config[colIndex]] = timeSegments
-    } else {
+    } else if (config) {
       addDateToSchedule(config[colIndex], [selectedTimeSegment])
     }
     setGrid(newGrid)
@@ -248,8 +248,8 @@ const Grid = ({
               gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`, // Ensure at least one column
             }}
           >
-            {dates.length > 0 ? (
-              dates.map((day, index) => (
+            {(dates?.length as number) > 0 ? (
+              dates?.map((day, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-center border-gray-300 text-sm text-gray-600"
@@ -302,12 +302,12 @@ const Grid = ({
                       : ''
                   }`}
                   onMouseDown={
-                    dates.length > 0
+                    (dates?.length as number) > 0
                       ? () => handleMouseDown(rowIndex, colIndex)
                       : undefined
                   }
                   onMouseEnter={
-                    dates.length > 0
+                    (dates?.length as number) > 0
                       ? () => handleMouseEnter(rowIndex, colIndex)
                       : undefined
                   }

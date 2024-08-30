@@ -9,22 +9,22 @@ import { times } from '@/utils/timeUtils'
 import '@/app/calendarStyles.css'
 
 interface EventFormProps {
-  title: string
-  setTitle: React.Dispatch<React.SetStateAction<string>>
+  title: string | null
+  setTitle: React.Dispatch<React.SetStateAction<string | null>>
   description: string
   setDescription: React.Dispatch<React.SetStateAction<string>>
-  location: string
-  setLocation: React.Dispatch<React.SetStateAction<string>>
+  location: string | null
+  setLocation: React.Dispatch<React.SetStateAction<string | null>>
   earliestTime: string
   setEarliestTime: React.Dispatch<React.SetStateAction<string>>
   latestTime: string
   setLatestTime: React.Dispatch<React.SetStateAction<string>>
   mode: string
   setMode: React.Dispatch<React.SetStateAction<string>>
-  config: string[]
-  setConfig: React.Dispatch<React.SetStateAction<string[]>>
-  timezone: string
-  setTimezone: React.Dispatch<React.SetStateAction<string>>
+  config: string[] | null
+  setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
+  timezone: string | null
+  setTimezone: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 const EventForm = ({
@@ -73,29 +73,35 @@ const EventForm = ({
   return (
     <>
       <form //Form to enter Event data (Title, Description...etc)
-        className="flex w-full flex-col gap-6"
+        className="flex w-full flex-col"
       >
+        {title === null && (
+          <p className="mt-0 p-0 text-error">Title is required</p>
+        )}
         <input //Event Title text input
           type="text"
-          value={title}
+          value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
-          className="input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
+          className="input mb-6 w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
         />
 
         <textarea //Event Description text input
           value={description}
-          placeholder="Event Description"
+          placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="textarea textarea-bordered mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         ></textarea>
 
+        {location === null && (
+          <p className="mt-0 p-0 text-error">Location is required</p>
+        )}
         <input //Event Location text input
           type="text"
-          value={location}
+          value={location as string}
           placeholder="Location"
           onChange={(e) => setLocation(e.target.value)}
-          className="input w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="input mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         />
 
         <div //Event EarliestTime to LatestTime row container
@@ -104,7 +110,7 @@ const EventForm = ({
           <select //EarliestTime dropdown
             value={earliestTime}
             onChange={(e) => setEarliestTime(e.target.value)}
-            className="select w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
           >
             <option disabled value="">
               Earliest Time
@@ -121,7 +127,7 @@ const EventForm = ({
           <select //LatestTime dropdown
             value={latestTime}
             onChange={(e) => setLatestTime(e.target.value)}
-            className="select w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
           >
             <option disabled value="">
               Latest Time
@@ -132,6 +138,9 @@ const EventForm = ({
           </select>
         </div>
 
+        {config === null && (
+          <p className="text-error">At least one day required</p>
+        )}
         <div className="mb-4">
           <button
             type="button"
@@ -166,26 +175,27 @@ const EventForm = ({
                 onChange={(value) => {
                   console.log(value)
                   const dateValue = (value as Date).toString()
-                  let newSpecificDays = config
+                  let newSpecificDays: string[] = config as string[]
                   if (
                     !config?.some((day) => day === dateValue) &&
-                    config.length < 7
+                    (config?.length as number) < 7
                   ) {
                     // 7 day limit
                     // Add the value date to the specificDays array
-                    newSpecificDays = [...config, dateValue]
+                    newSpecificDays = [...(config as string[]), dateValue]
                     setConfig(newSpecificDays)
                   } else {
                     // Remove the value date from the specificDays array
                     newSpecificDays = newSpecificDays.filter(
                       (day) => day !== dateValue,
                     )
-                    setConfig((prevConfig) =>
-                      prevConfig.filter((day) => day !== dateValue),
+                    setConfig(
+                      (prevConfig) =>
+                        prevConfig?.filter((day) => day !== dateValue) || [],
                     )
                   }
 
-                  if (newSpecificDays.length >= 7 && config.length === 7) {
+                  if (newSpecificDays.length >= 7 && config?.length === 7) {
                     // Message for 7 day limit
                     setPassSpecificDaysLimitMessage(
                       'You can only select up to 7 days',
@@ -203,7 +213,7 @@ const EventForm = ({
                   if (Date.now() > date.getTime()) {
                     return 'disabled'
                   }
-                  return view === 'month' && config.includes(date.toString())
+                  return view === 'month' && config?.includes(date.toString())
                     ? 'active'
                     : null
                 }}
@@ -214,7 +224,7 @@ const EventForm = ({
             </div>
           ) : (
             <div //Days of the week
-              className="join flex w-full space-x-1.5"
+              className="join mb-6 flex w-full space-x-1.5"
             >
               {days.map((day) => (
                 <input
@@ -231,8 +241,11 @@ const EventForm = ({
           )}
         </div>
 
+        {timezone === null && (
+          <p className="mt-0 p-0 text-error">Timezone is required</p>
+        )}
         <select //Timezone dropdown
-          value={timezone}
+          value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
           className="select w-full border-gray-300 bg-white text-base font-normal"
         >
