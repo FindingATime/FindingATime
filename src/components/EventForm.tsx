@@ -1,11 +1,9 @@
 'use client'
 import React from 'react'
-import { days, modeOptions } from '@/utils/dateUtils'
+import { days, months, modeOptions } from '@/utils/dateUtils'
 import { useState } from 'react'
 import Calendar from 'react-calendar'
-// import 'react-calendar/dist/Calendar.css'
 import { times } from '@/utils/timeUtils'
-// import calendarstyles
 import '@/app/calendarStyles.css'
 
 interface EventFormProps {
@@ -173,8 +171,10 @@ const EventForm = ({
                 } // only allow users to select dates within the next 60 days
                 activeStartDate={new Date()}
                 onChange={(value) => {
-                  console.log(value)
-                  const dateValue = (value as Date).toString()
+                  const dateValue =
+                    months[(value as Date).getUTCMonth()] +
+                    ' ' +
+                    (value as Date).getUTCDate()
                   let newSpecificDays: string[] = config as string[]
                   if (
                     !config?.some((day) => day === dateValue) &&
@@ -217,12 +217,14 @@ const EventForm = ({
                       today.getUTCDate() === date.getUTCDate() &&
                       today.getUTCMonth() === date.getUTCMonth() &&
                       today.getUTCFullYear() === date.getUTCFullYear()
-                    )
+                    ) // Allow today's date to be selected
                   ) {
                     return 'disabled'
                   }
-                  console.log('date.toString()', date.toString())
-                  return view === 'month' && config?.includes(date.toString())
+                  return view === 'month' &&
+                    config?.includes(
+                      months[date.getUTCMonth()] + ' ' + date.getUTCDate(),
+                    )
                     ? 'active'
                     : null
                 }}
