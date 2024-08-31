@@ -13,7 +13,7 @@
 }
 
 .disabled {
-  background-color: darkred;
+  background-color: rgb(194, 3, 3);
   color: black;
   width: 25px;
   height: 25px;
