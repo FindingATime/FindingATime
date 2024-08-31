@@ -162,7 +162,7 @@ const EventForm = ({
             Specific Days
           </button>
         </div>
-        <div>
+        <div className={`${config !== null && 'mb-6'}`}>
           {mode === 'specific' ? (
             <div>
               <Calendar // Specific days
@@ -170,29 +170,52 @@ const EventForm = ({
                 maxDate={
                   new Date(new Date().setDate(new Date().getDate() + 60))
                 } // only allow users to select dates within the next 60 days
-                activeStartDate={new Date()}
                 onChange={(value) => {
-                  const dateValue =
+                  const dateValue = value as Date
+                  dateValue.setHours(0, 0, 0, 0)
+                  const monthDate =
                     months[(value as Date).getUTCMonth()] +
                     ' ' +
                     (value as Date).getUTCDate()
-                  let newSpecificDays: string[] = config as string[]
+                  let newSpecificDays: string[] = config ? config : []
+                  console.log('config', config)
+                  console.log('newSpecificDays', newSpecificDays)
                   if (
-                    !config?.some((day) => day === dateValue) &&
-                    (config?.length as number) < 7
+                    !newSpecificDays?.some((day) => {
+                      const month = months[new Date(day).getUTCMonth()]
+                      const dateDay = new Date(day).getUTCDate()
+                      return month + ' ' + dateDay === monthDate
+                    }) &&
+                    (newSpecificDays?.length as number) < 7
                   ) {
+                    console.log(dateValue.toString())
                     // 7 day limit
                     // Add the value date to the specificDays array
-                    newSpecificDays = [...(config as string[]), dateValue]
+                    if (config) {
+                      newSpecificDays = [
+                        ...(config as string[]),
+                        dateValue.toString(),
+                      ]
+                    } else {
+                      newSpecificDays = [dateValue.toString()]
+                    }
+                    console.log('newSpecificDays if', newSpecificDays)
                     setConfig(newSpecificDays)
                   } else {
                     // Remove the value date from the specificDays array
-                    newSpecificDays = newSpecificDays.filter(
-                      (day) => day !== dateValue,
-                    )
+                    newSpecificDays = newSpecificDays?.filter((day) => {
+                      const month = months[new Date(day).getUTCMonth()]
+                      const dateDay = new Date(day).getUTCDate()
+                      return month + ' ' + dateDay !== monthDate
+                    })
+                    console.log('newSpecificDays else', newSpecificDays)
                     setConfig(
                       (prevConfig) =>
-                        prevConfig?.filter((day) => day !== dateValue) || [],
+                        prevConfig?.filter((day) => {
+                          const month = months[new Date(day).getUTCMonth()]
+                          const dateDay = new Date(day).getUTCDate()
+                          return month + ' ' + dateDay !== monthDate
+                        }) || [],
                     )
                   }
 
@@ -212,22 +235,19 @@ const EventForm = ({
                 }}
                 tileClassName={({ activeStartDate, date, view }) => {
                   const today = new Date()
+                  today.setHours(0, 0, 0, 0)
                   if (
-                    today.getTime() > date.getTime() &&
-                    !(
-                      today.getUTCDate() === date.getUTCDate() &&
-                      today.getUTCMonth() === date.getUTCMonth() &&
-                      today.getUTCFullYear() === date.getUTCFullYear()
-                    ) // Allow today's date to be selected
+                    // Disable past dates and days past 60 days of today
+                    today.getTime() > date.getTime() ||
+                    new Date(
+                      new Date().setDate(new Date().getDate() + 60),
+                    ).getTime() < date.getTime()
                   ) {
                     return 'disabled'
                   }
-                  return view === 'month' &&
-                    config?.includes(
-                      months[date.getUTCMonth()] + ' ' + date.getUTCDate(),
-                    )
+                  return view === 'month' && config?.includes(date.toString())
                     ? 'active'
-                    : null
+                    : 'available'
                 }}
               />
 

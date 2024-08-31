@@ -1,25 +1,72 @@
 .active {
-  background-color: green;
+  background-color: rgb(70, 247, 0);
   color: #000;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
+  border: #000;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   transition: 0.3s;
+  border: 1px solid white;
 }
 
 .disabled {
-  background-color: #2d4343;
-  color: #000;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  background-color: darkred;
+  color: black;
+  width: 25px;
+  height: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   transition: 0.3s;
+  border: 1px solid white;
+}
+
+.active:hover {
+  background-color: darkgreen;
+  color: #fff;
+}
+
+.available:hover {
+  background-color: green;
+  color: #fff;
+}
+
+.calendar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.react-calendar__navigation__prev2-button {
+  display: none;
+}
+
+.react-calendar__navigation__next2-button {
+  display: none;
+}
+
+.react-calendar__navigation button {
+  margin: 0 10px;
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f0f0f0;
+  color: #ccc;
+}
+
+.react-calendar__navigation button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  color: #000;
 }

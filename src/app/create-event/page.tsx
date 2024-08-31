@@ -86,6 +86,7 @@ export default function CreateEvent() {
       setTimezone(null)
     }
     if (config?.length === 0) {
+      console.log('config is empty')
       setConfig(null)
     }
 
@@ -233,7 +234,6 @@ export default function CreateEvent() {
             config={config}
             schedule={schedule}
             setSchedule={setSchedule}
-            setConfig={setConfig}
           />
 
           {isButtonsVisible && ( // Conditionally render buttons section
