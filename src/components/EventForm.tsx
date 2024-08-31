@@ -78,17 +78,19 @@ const EventForm = ({
           value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
-          className="input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
+          className={`input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0 ${
+            title !== null && 'mb-6'
+          }`}
         />
         {title === null && (
-          <p className="mb-6 p-0 text-error">Title is required</p>
+          <p className="mb-3 p-0 text-error">Title is required</p>
         )}
 
         <textarea //Event Description text input
           value={description}
           placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="textarea textarea-bordered mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         ></textarea>
 
         <input //Event Location text input
@@ -96,14 +98,16 @@ const EventForm = ({
           value={location as string}
           placeholder="Location"
           onChange={(e) => setLocation(e.target.value)}
-          className="input mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className={`input w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0 ${
+            location !== null && 'mb-6'
+          }`}
         />
         {location === null && (
-          <p className="mb-6 p-0 text-error">Location is required</p>
+          <p className="mb-3 p-0 text-error">Location is required</p>
         )}
 
         <div //Event EarliestTime to LatestTime row container
-          className="flex w-full flex-row items-center gap-3"
+          className="flex w-full flex-row items-center justify-center gap-3"
         >
           <select //EarliestTime dropdown
             value={earliestTime}
@@ -118,7 +122,7 @@ const EventForm = ({
             ))}
           </select>
           <p //"to"
-            className="text-normal font-normal text-gray-400"
+            className="text-normal mb-6 font-normal text-gray-400"
           >
             to
           </p>
@@ -136,9 +140,6 @@ const EventForm = ({
           </select>
         </div>
 
-        {config === null && (
-          <p className="text-error">At least one day required</p>
-        )}
         <div className="mb-4">
           <button
             type="button"
@@ -234,7 +235,9 @@ const EventForm = ({
             </div>
           ) : (
             <div //Days of the week
-              className="join mb-6 flex w-full space-x-1.5"
+              className={`join flex w-full space-x-1.5 ${
+                config !== null && 'mb-6'
+              }`}
             >
               {days.map((day) => (
                 <input
@@ -250,10 +253,10 @@ const EventForm = ({
             </div>
           )}
         </div>
-
-        {timezone === null && (
-          <p className="mt-0 p-0 text-error">Timezone is required</p>
+        {config === null && (
+          <p className="mb-3 p-0 text-error">At least one day required</p>
         )}
+
         <select //Timezone dropdown
           value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
@@ -277,6 +280,9 @@ const EventForm = ({
           <option value="JST">JST (Japan Standard Time)</option>
           <option value="AEST">AEST (Australian Eastern Standard Time)</option>
         </select>
+        {timezone === null && (
+          <p className="mt-0 p-0 text-error">Timezone is required</p>
+        )}
       </form>
     </>
   )

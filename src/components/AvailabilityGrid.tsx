@@ -78,7 +78,7 @@ const Grid = ({
       newConfig = config?.sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       ) as string[]
-      newConfig = newConfig.map(
+      newConfig = newConfig?.map(
         (date) =>
           months[new Date(date).getMonth()] + ' ' + new Date(date).getDate(),
       )
