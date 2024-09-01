@@ -77,13 +77,14 @@ export default function Index() {
             <div className="mb-4 flex items-center justify-start">
               <h1 className="text-2xl font-black font-extrabold">My Events</h1>
               <Link href="/create-event">
-                <button className="btn btn-primary ml-6">+ New Event</button>
+                <button className="btn btn-primary ml-6">Create Event</button>
               </Link>
             </div>
             {!isLoading &&
               (myEvents.length === 0 ? (
                 <p>
-                  No events found. Press &apos;New Event&apos; to get started!
+                  No events found. Press &apos;Create Event&apos; to get
+                  started!
                 </p>
               ) : (
                 <div className="grid grid-cols-3 gap-4">

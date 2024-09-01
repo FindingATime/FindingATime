@@ -87,6 +87,7 @@ const EventForm = ({
         )}
 
         <textarea //Event Description text input
+          rows={3}
           value={description}
           placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
