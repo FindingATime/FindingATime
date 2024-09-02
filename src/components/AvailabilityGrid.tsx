@@ -179,6 +179,25 @@ const Grid = ({
     }
   }
 
+  const generateGridGradient = (
+    isSelected: number,
+    totalResponders: number,
+  ): string => {
+    if (totalResponders === 0) return '' // No responders, no color
+
+    // Define shades
+    const shades = [100, 200, 300, 400, 500, 600]
+
+    // Calculate fraction and map to shade index
+    const fraction = isSelected / totalResponders
+    const index = Math.min(
+      Math.floor(fraction * (shades.length - 1)),
+      shades.length - 1,
+    )
+    const shade = shades[index]
+    return `bg-emerald-${shade}`
+  }
+
   // Function toggles the value of a cell
   const toggleCell = (rowIndex: number, colIndex: number) => {
     const newGrid = [...grid]
@@ -304,9 +323,10 @@ const Grid = ({
                   key={`${rowIndex}-${colIndex}`}
                   className={`flex h-16 items-center justify-center border-[0.5px] border-gray-200 ${
                     isSelected
-                      ? isSelected === (responders?.length || 0)
-                        ? 'bg-emerald-600'
-                        : 'bg-emerald-300'
+                      ? generateGridGradient(
+                          isSelected,
+                          responders?.length || 0,
+                        )
                       : ''
                   } ${
                     // Change cursor to pointer if grid is selectable
