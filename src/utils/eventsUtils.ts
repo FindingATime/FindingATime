@@ -4,6 +4,7 @@ export interface Event {
   id: UUID
   viewTime: Date
   title: string
+  description: string
   starttime: string
   endtime: string
   timezone: string

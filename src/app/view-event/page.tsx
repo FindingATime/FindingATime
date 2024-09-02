@@ -20,6 +20,7 @@ import EventCard from '@/components/EventCard'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import { create } from 'domain'
+import EventFormView from '@/components/EventFormView'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -87,12 +88,13 @@ const ViewEvent = () => {
           id: eventId as UUID,
           viewTime: new Date(),
           title: data[0].title,
+          description: data[0].description,
           starttime: data[0].starttime,
           endtime: data[0].endtime,
           timezone: data[0].timezone,
           location: data[0].location,
           config: data[0].config || {},
-          mode: data[0].mode || 'weekly', // TODO: need to modify to include both weekly & specific dates
+          mode: data[0].mode || 'weekly',
         }
 
         setEvent(newEvent)
@@ -198,17 +200,18 @@ const ViewEvent = () => {
         className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
       >
         <section //Left side container (Event form)
-          className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
+          className="h-full w-full rounded-lg px-10 py-16 shadow-lg md:w-[30%]"
         >
           {event && (
-            <EventCard // Event Card to display Event Details
-              eventId={event.id}
+            <EventFormView // EventFormView to display Event Details
               title={event.title}
-              starttime={event.starttime}
-              endtime={event.endtime}
+              description={event.description}
               location={event.location}
+              earliestTime={event.starttime}
+              latestTime={event.endtime}
+              mode={event.mode as 'weekly' | 'specific'}
+              config={event.config}
               timezone={event.timezone}
-              key={event.id}
             />
           )}
 
