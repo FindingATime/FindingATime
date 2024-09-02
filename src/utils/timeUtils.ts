@@ -4,6 +4,7 @@ for (let hour = 0; hour < 24; hour++) {
   const suffix = hour < 12 ? 'AM' : 'PM'
   const displayHour = hour % 12 === 0 ? 12 : hour % 12
   times.push(`${displayHour}:00 ${suffix}`)
+  times.push(`${displayHour}:30 ${suffix}`)
 }
 
 // Function to populate an array with times from earliest to latest used in rows for availability grid
