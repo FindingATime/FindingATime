@@ -52,7 +52,6 @@ export async function getAttendees(eventid: UUID) {
       return response.json()
     })
     .then((data) => {
-      console.log('Attendees: ', data)
       return data
     })
     .catch((error) => {
@@ -122,6 +121,32 @@ export async function editAttendee(
     })
     .catch((error) => {
       console.error('Error:', error.message)
+      return error
+    })
+}
+
+export async function getNumRespondents(eventids: UUID[]) {
+  const encodedEventIds = encodeURIComponent(
+    eventids.map((id) => encodeURIComponent(id)).join(','),
+  )
+  return fetch(`/api/attendees/count?eventids=${encodedEventIds}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((err) => {
+          throw new Error(err.message)
+        })
+      }
+      return response.json()
+    })
+    .then((data) => {
+      return data
+    })
+    .catch((error) => {
       return error
     })
 }

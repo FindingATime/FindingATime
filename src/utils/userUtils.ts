@@ -24,7 +24,6 @@ export function createUser(name: string) {
       if (!localStorage.getItem('username')) {
         localStorage.setItem('username', data[0].id)
       }
-      console.log('Success:', data)
       return data
     })
     .catch((error) => {
@@ -48,7 +47,6 @@ export async function getUser(userId: UUID) {
       return response.json()
     })
     .then((data) => {
-      console.log(data)
       return data
     })
     .catch((error) => {
@@ -89,7 +87,6 @@ export async function addUserCreateEvent(
         if (!localStorage.getItem('username')) {
           localStorage.setItem('username', data[0].id)
         }
-        console.log('Success:', data)
       })
       .catch((error) => {
         console.error('Error:', error.message)

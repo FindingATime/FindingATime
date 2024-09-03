@@ -68,14 +68,11 @@ const Grid = ({
   useEffect(() => {
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      console.log('Time array before sort: ', timeArray)
       const sortedConfig = config.sort(
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig)
-      console.log('Time array after sort: ', timeArray)
       // setDates(config)
-      // console.log('Dates config: ', config)
       setSchedule({})
     } else {
       // Sort dates in ascending order
@@ -183,22 +180,13 @@ const Grid = ({
   const toggleCell = (rowIndex: number, colIndex: number) => {
     const newGrid = [...grid]
     newGrid[rowIndex][colIndex] = !newGrid[rowIndex][colIndex]
-    console.log('Toggled cell at: ', rowIndex, colIndex)
-    console.log('Date at colIndex: ', config[colIndex])
-    console.log('Time at rowIndex: ', timeArray[rowIndex])
-    console.log('Time at rowIndex + 1: ', timeArray[rowIndex + 1])
-    console.log('Timearray: ', timeArray)
-    console.log('config[colIndex]: ', config[colIndex])
     const selectedTimeSegment = {
       beginning: timeArray[rowIndex],
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
-    console.log('selectedTimeSegment: ', selectedTimeSegment)
     if (config[colIndex] in schedule) {
-      console.log('Date already in schedule: ', config[colIndex])
       let timeSegments = schedule[config[colIndex]]
-      console.log('Timesegments before: ', timeSegments)
 
       // Check if the time segment is already in the schedule
       const segmentIndex = timeSegments.findIndex(
@@ -210,20 +198,15 @@ const Grid = ({
       if (segmentIndex !== -1) {
         // Remove the time segment if it exists
         timeSegments.splice(segmentIndex, 1)
-        console.log('Removed time segment: ', selectedTimeSegment)
       } else {
         // Add the time segment if it does not exist
         timeSegments.push(selectedTimeSegment)
-        console.log('Added time segment: ', selectedTimeSegment)
       }
 
-      console.log('Timesegments after: ', timeSegments)
       schedule[config[colIndex]] = timeSegments
     } else {
-      console.log('Date not in schedule: ', config[colIndex])
       addDateToSchedule(config[colIndex], [selectedTimeSegment])
     }
-    console.log('Schedule: ', schedule)
     setGrid(newGrid)
   }
 

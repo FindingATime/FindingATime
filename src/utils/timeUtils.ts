@@ -27,7 +27,6 @@ export const generateTimeRange = (
   for (let i = start; i <= end + 1; i++) {
     generateTimeRange.push(times[i % 24])
   }
-  //console.log generateTimeRange); // debug prints array
 
   return generateTimeRange
 }
