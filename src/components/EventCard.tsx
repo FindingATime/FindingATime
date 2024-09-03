@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { UUID } from 'crypto'
 import { useState, useEffect } from 'react'
-import { getNumRespondents } from '@/utils/attendeesUtils'
 
 interface EventCardProps {
   eventId: UUID

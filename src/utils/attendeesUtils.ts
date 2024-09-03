@@ -129,7 +129,6 @@ export async function getNumRespondents(eventids: UUID[]) {
   const encodedEventIds = encodeURIComponent(
     eventids.map((id) => encodeURIComponent(id)).join(','),
   )
-  console.log('Encoded event ids:', encodedEventIds)
   return fetch(`/api/attendees/count?eventids=${encodedEventIds}`, {
     method: 'GET',
     headers: {
@@ -145,11 +144,9 @@ export async function getNumRespondents(eventids: UUID[]) {
       return response.json()
     })
     .then((data) => {
-      console.log('Number of respondents:', data)
       return data
     })
     .catch((error) => {
-      console.error('Error:', error.message)
       return error
     })
 }

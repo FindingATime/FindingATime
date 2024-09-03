@@ -22,34 +22,20 @@ export default function Index() {
     [key: string]: number
   }>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [eventIds, setEventIds] = useState<Set<UUID>>(new Set())
 
   useEffect(() => {
+    const eventIdSet = new Set<UUID>()
     if (localStorage.getItem('username')) {
       getMyEvents(localStorage.getItem('username') as UUID)
         .then((data) => {
           setMyEvents(data)
-          // set up event ids array using data returned
-          const myEventIdsArray = data.map((event: Event) => event.id)
-          setMyEventIds(myEventIdsArray)
-          getNumRespondents(myEventIdsArray).then((numRespondentsArray) => {
-            let newObj: { [key: string]: number } = {}
-            numRespondentsArray.forEach(
-              (numRespondents: { [key: string]: UUID }, index: any) => {
-                if (numRespondents.eventid in newObj) {
-                  newObj[numRespondents.eventid as string] =
-                    newObj[numRespondents.eventid as string] + 1
-                } else {
-                  newObj[numRespondents.eventid as string] = 1
-                }
-              },
-            )
-            setEventRespondentsCountDict(newObj)
-            setIsLoading(false)
+          data.forEach((event: Event) => {
+            eventIdSet.add(event.id)
           })
         })
         .catch((error) => {
           console.error('Error:', error.message)
-          setIsLoading(false)
         })
     } else {
       setIsLoading(false)
@@ -60,12 +46,47 @@ export default function Index() {
         localStorage.getItem('FindingATimeRecentlyViewed') as string,
       ) as Event[]
       setUpcomingEvents(recentlyViewedEventsArray)
-
+      recentlyViewedEventsArray.forEach((event: Event) => {
+        eventIdSet.add(event.id)
+      })
       const upcomingEventIdsArray = recentlyViewedEventsArray.map(
         (event: Event) => event.id,
       )
       setUpcomingEventIds(upcomingEventIdsArray)
     }
+    setEventIds(eventIdSet)
+
+    // get number of respondents for each event 10 at a time to avoid hitting the API limit
+    // if there is less than 10, then get the remaining
+    const eventIdsArray = Array.from(eventIdSet)
+    const promises = []
+    let newObj: { [key: string]: number } = {}
+    for (let i = 0; i < eventIdsArray.length; i += 10) {
+      // slice through 10 events at a time, unless there is less than 10 then just get remaining
+      const promise = getNumRespondents(
+        eventIdsArray.slice(
+          i,
+          i + 10 < eventIdsArray.length ? i + 10 : i + eventIdsArray.length - i,
+        ),
+      ).then((numRespondentsArray) => {
+        numRespondentsArray.forEach(
+          (numRespondents: { [key: string]: UUID }, index: any) => {
+            if (numRespondents.eventid in newObj) {
+              newObj[numRespondents.eventid as string] =
+                newObj[numRespondents.eventid as string] + 1
+            } else {
+              newObj[numRespondents.eventid as string] = 1
+            }
+          },
+        )
+        setEventRespondentsCountDict((prev) => ({ ...prev, ...newObj }))
+      })
+      promises.push(promise)
+    }
+    // waits until all fetches for event respondents are done
+    Promise.all(promises).then(() => {
+      setIsLoading(false)
+    })
   }, [])
 
   return (
@@ -86,22 +107,24 @@ export default function Index() {
                   No events found. Press &apos;New Event&apos; to get started!
                 </p>
               ) : (
-                <div className="grid grid-cols-3 gap-4">
-                  {myEvents.map((event) => (
-                    <EventCard
-                      eventId={event.id}
-                      title={event.title}
-                      starttime={event.starttime}
-                      endtime={event.endtime}
-                      timezone={event.timezone}
-                      location={event.location}
-                      numRespondents={
-                        eventRespondentsCountDict[event.id as string]
-                      }
-                      key={event.id}
-                    />
-                  ))}
-                </div>
+                !isLoading && (
+                  <div className="grid grid-cols-3 gap-4">
+                    {myEvents.map((event) => (
+                      <EventCard
+                        eventId={event.id}
+                        title={event.title}
+                        starttime={event.starttime}
+                        endtime={event.endtime}
+                        timezone={event.timezone}
+                        location={event.location}
+                        numRespondents={
+                          eventRespondentsCountDict[event.id as string]
+                        }
+                        key={event.id}
+                      />
+                    ))}
+                  </div>
+                )
               ))}
           </div>
           {isLoading && (
@@ -114,6 +137,7 @@ export default function Index() {
             {!isLoading && upcomingEvents.length === 0 ? (
               <p>No recently viewed events.</p>
             ) : (
+              !isLoading &&
               upcomingEvents.map((event) => (
                 <div key={event.id}>
                   <EventCard
@@ -123,6 +147,9 @@ export default function Index() {
                     endtime={event.endtime}
                     location={event.location}
                     timezone={event.timezone}
+                    numRespondents={
+                      eventRespondentsCountDict[event.id as string]
+                    }
                     key={event.id}
                   />
                   <div className="mb-4"></div>
