@@ -1,30 +1,28 @@
 'use client'
 import React from 'react'
-import { days, modeOptions } from '@/utils/dateUtils'
+import { days, months, modeOptions } from '@/utils/dateUtils'
 import { useState } from 'react'
 import Calendar from 'react-calendar'
-// import 'react-calendar/dist/Calendar.css'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
-// import calendarstyles
 import '@/app/calendarStyles.css'
 
 interface EventFormProps {
-  title: string
-  setTitle: React.Dispatch<React.SetStateAction<string>>
+  title: string | null
+  setTitle: React.Dispatch<React.SetStateAction<string | null>>
   description: string
   setDescription: React.Dispatch<React.SetStateAction<string>>
-  location: string
-  setLocation: React.Dispatch<React.SetStateAction<string>>
+  location: string | null
+  setLocation: React.Dispatch<React.SetStateAction<string | null>>
   earliestTime: string
   setEarliestTime: React.Dispatch<React.SetStateAction<string>>
   latestTime: string
   setLatestTime: React.Dispatch<React.SetStateAction<string>>
   mode: string
   setMode: React.Dispatch<React.SetStateAction<string>>
-  config: string[]
-  setConfig: React.Dispatch<React.SetStateAction<string[]>>
-  timezone: string
-  setTimezone: React.Dispatch<React.SetStateAction<string>>
+  config: string[] | null
+  setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
+  timezone: string | null
+  setTimezone: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 const EventForm = ({
@@ -47,6 +45,9 @@ const EventForm = ({
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
+
+  const maxDaysAhead = 60
+  const maxDaysSelectable = 7
 
   // Function to handle selected daysOfWeek array based on checkbox selection and deselection
   const handleSelectedDayOfWeek = (day: string) => {
@@ -73,38 +74,49 @@ const EventForm = ({
   return (
     <>
       <form //Form to enter Event data (Title, Description...etc)
-        className="flex w-full flex-col gap-6"
+        className="flex w-full flex-col"
       >
         <input //Event Title text input
           type="text"
-          value={title}
+          value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
-          className="input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0"
+          className={`input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0 ${
+            title !== null && 'mb-6'
+          }`}
         />
+        {title === null && (
+          <p className="mb-3 p-0 text-error">Title is required</p>
+        )}
 
         <textarea //Event Description text input
+          rows={3}
           value={description}
-          placeholder="Event Description"
+          placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="textarea textarea-bordered mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
         ></textarea>
 
         <input //Event Location text input
           type="text"
-          value={location}
+          value={location as string}
           placeholder="Location"
           onChange={(e) => setLocation(e.target.value)}
-          className="input w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className={`input w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0 ${
+            location !== null && 'mb-6'
+          }`}
         />
+        {location === null && (
+          <p className="mb-3 p-0 text-error">Location is required</p>
+        )}
 
         <div //Event EarliestTime to LatestTime row container
-          className="flex w-full flex-row items-center gap-3"
+          className="flex w-full flex-row items-center justify-center gap-3"
         >
           <select //EarliestTime dropdown
             value={earliestTime}
             onChange={(e) => setEarliestTime(e.target.value)}
-            className="select w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
           >
             <option disabled value="">
               Earliest Time
@@ -114,14 +126,14 @@ const EventForm = ({
             ))}
           </select>
           <p //"to"
-            className="text-normal font-normal text-gray-400"
+            className="text-normal mb-6 font-normal text-gray-400"
           >
             to
           </p>
           <select //LatestTime dropdown
             value={latestTime}
             onChange={(e) => setLatestTime(e.target.value)}
-            className="select w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
           >
             <option disabled value="">
               Latest Time
@@ -154,41 +166,67 @@ const EventForm = ({
             Specific Days
           </button>
         </div>
-        <div>
+        <div className={`${config !== null && 'mb-6'}`}>
           {mode === 'specific' ? (
             <div>
               <Calendar // Specific days
                 minDate={new Date()}
                 maxDate={
-                  new Date(new Date().setDate(new Date().getDate() + 60))
+                  new Date(
+                    new Date().setDate(new Date().getDate() + maxDaysAhead),
+                  )
                 } // only allow users to select dates within the next 60 days
-                activeStartDate={new Date()}
                 onChange={(value) => {
-                  console.log(value)
-                  const dateValue = (value as Date).toString()
-                  let newSpecificDays = config
+                  const dateValue = value as Date
+                  dateValue.setHours(0, 0, 0, 0)
+                  const monthDate =
+                    months[(value as Date).getUTCMonth()] +
+                    ' ' +
+                    (value as Date).getUTCDate()
+                  let newSpecificDays: string[] = config ? config : []
                   if (
-                    !config?.some((day) => day === dateValue) &&
-                    config.length < 7
+                    !newSpecificDays?.some((day) => {
+                      const month = months[new Date(day).getUTCMonth()]
+                      const dateDay = new Date(day).getUTCDate()
+                      return month + ' ' + dateDay === monthDate
+                    }) &&
+                    (newSpecificDays?.length as number) < maxDaysSelectable
                   ) {
                     // 7 day limit
                     // Add the value date to the specificDays array
-                    newSpecificDays = [...config, dateValue]
+                    if (config) {
+                      newSpecificDays = [
+                        ...(config as string[]),
+                        dateValue.toString(),
+                      ]
+                    } else {
+                      newSpecificDays = [dateValue.toString()]
+                    }
                     setConfig(newSpecificDays)
                   } else {
                     // Remove the value date from the specificDays array
-                    newSpecificDays = newSpecificDays.filter(
-                      (day) => day !== dateValue,
-                    )
-                    setConfig((prevConfig) =>
-                      prevConfig.filter((day) => day !== dateValue),
+                    newSpecificDays = newSpecificDays?.filter((day) => {
+                      const month = months[new Date(day).getUTCMonth()]
+                      const dateDay = new Date(day).getUTCDate()
+                      return month + ' ' + dateDay !== monthDate
+                    })
+                    setConfig(
+                      (prevConfig) =>
+                        prevConfig?.filter((day) => {
+                          const month = months[new Date(day).getUTCMonth()]
+                          const dateDay = new Date(day).getUTCDate()
+                          return month + ' ' + dateDay !== monthDate
+                        }) || [],
                     )
                   }
 
-                  if (newSpecificDays.length >= 7 && config.length === 7) {
-                    // Message for 7 day limit
+                  if (
+                    newSpecificDays.length >= maxDaysSelectable &&
+                    config?.length === maxDaysSelectable
+                  ) {
+                    // Message for maximum selectable days limit
                     setPassSpecificDaysLimitMessage(
-                      'You can only select up to 7 days',
+                      `You can only select up to ${maxDaysSelectable} days`,
                     )
                   } else if (newSpecificDays.length < 1) {
                     // Message for at least 1 day
@@ -200,21 +238,30 @@ const EventForm = ({
                   }
                 }}
                 tileClassName={({ activeStartDate, date, view }) => {
-                  if (Date.now() > date.getTime()) {
-                    return 'disabled'
+                  const today = new Date()
+                  today.setHours(0, 0, 0, 0)
+                  if (
+                    // Disable past dates and days past 60 days of today
+                    today.getTime() > date.getTime() ||
+                    new Date(
+                      new Date().setDate(new Date().getDate() + maxDaysAhead),
+                    ).getTime() < date.getTime()
+                  ) {
+                    return 'btn-active btn-error btn-gap'
                   }
-                  return view === 'month' && config.includes(date.toString())
-                    ? 'active'
-                    : null
+                  return view === 'month' && config?.includes(date.toString())
+                    ? 'btn-active btn-success btn-gap'
+                    : 'btn-primary available'
                 }}
-                view="month"
               />
 
               <p className="text-error">{passSpecificDaysLimitMessage}</p>
             </div>
           ) : (
             <div //Days of the week
-              className="join flex w-full space-x-1.5"
+              className={`join flex w-full space-x-1.5 ${
+                config !== null && 'mb-6'
+              }`}
             >
               {days.map((day) => (
                 <input
@@ -230,9 +277,12 @@ const EventForm = ({
             </div>
           )}
         </div>
+        {config === null && (
+          <p className="mb-3 p-0 text-error">At least one day required</p>
+        )}
 
         <select //Timezone dropdown
-          value={timezone}
+          value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
           className="select w-full border-gray-300 bg-white text-base font-normal"
         >
@@ -245,6 +295,9 @@ const EventForm = ({
             </option>
           ))}
         </select>
+        {timezone === null && (
+          <p className="mt-0 p-0 text-error">Timezone is required</p>
+        )}
       </form>
     </>
   )

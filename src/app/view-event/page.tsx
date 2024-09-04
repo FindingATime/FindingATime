@@ -216,7 +216,6 @@ const ViewEvent = () => {
               responders={responders}
               mode={event.mode}
               config={convertConfigToArray(event.config)}
-              setConfig={setConfig}
               schedule={schedule}
               setSchedule={setSchedule}
               userAvailability={userAvailability}
