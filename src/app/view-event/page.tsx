@@ -225,7 +225,7 @@ const ViewEvent = () => {
             />
           )}
           <div //button container for positioning "Save" and "Cancel" buttons
-            className="flex flex-row justify-center gap-4 pt-8 "
+            className="flex flex-row justify-center"
           >
             {isNewUser && !isSignedIn ? (
               <div>

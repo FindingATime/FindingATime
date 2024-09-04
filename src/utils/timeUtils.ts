@@ -20,13 +20,13 @@ export const generateTimeRange = (
 
   // Handle case where latest time is earlier in the day than the earliest time
   if (end <= start) {
-    end += 24
+    end += times.length
   }
 
   // Populate the generateTimeRange array with times from start to end
   const generateTimeRange: string[] = []
   for (let i = start; i <= end + 1; i++) {
-    generateTimeRange.push(times[i % 24])
+    generateTimeRange.push(times[i % times.length])
   }
 
   return generateTimeRange

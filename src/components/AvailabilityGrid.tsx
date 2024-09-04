@@ -221,7 +221,7 @@ const Grid = ({
           className="grid-time-headers"
           style={{
             display: 'grid',
-            gridTemplateRows: `repeat(${dimensions.height}, 64px)`,
+            gridTemplateRows: `repeat(${dimensions.height}, 32px)`,
             alignItems: 'flex-start',
           }}
         >
@@ -277,7 +277,7 @@ const Grid = ({
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
               gridTemplateRows: `repeat(${dimensions.height - 2}, 1fr)`,
               width: '100%',
-              height: `${dimensions.height * 64 + 1}px`, // 64px height per row and add 1px to height to account for border
+              height: `${dimensions.height * 32 + 1}px`, // 32px height per row and add 1px to height to account for border
             }}
             onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
@@ -285,7 +285,7 @@ const Grid = ({
               row.map((isSelected, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-16 items-center justify-center border-[0.5px] border-gray-200 ${
+                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
                     isSelected
                       ? isSelected === (responders?.length || 0)
                         ? 'bg-emerald-600'
