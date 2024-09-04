@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { generateTimeRange } from '@/utils/timeUtils'
-import { months } from '@/utils/dateUtils'
+import { months, convertDateStringToDateObject } from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
 
 interface GridProps {
@@ -78,10 +78,13 @@ const Grid = ({
       newConfig = config?.sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       ) as string[]
-      newConfig = newConfig?.map(
-        (date) =>
-          months[new Date(date).getMonth()] + ' ' + new Date(date).getDate(),
-      )
+      newConfig = newConfig?.map((date) => {
+        return (
+          months[new Date(date).getUTCMonth()] +
+          ' ' +
+          new Date(date).getUTCDate()
+        )
+      })
       setDates(newConfig)
       setSchedule({})
     }
@@ -89,13 +92,29 @@ const Grid = ({
     // Only populate grid if in view mode and responder's time segments is not empty
     if (!isAvailable && responders) {
       const newGrid = initialGrid()
+      console.log('newGrid', newGrid)
+      console.log('config', config)
+      console.log('responders', responders)
 
       // loop through each day and each responder's timesegments
       config?.forEach((day, colIndex) => {
+        console.log('day', day)
         responders?.forEach((responder) => {
-          const times = responder.timesegments[day] || []
+          console.log(
+            'convertDateStringToDateObject(day).toString()',
+            convertDateStringToDateObject(day).toString(),
+          )
+          const times =
+            responder.timesegments[
+              mode === 'weekly'
+                ? day
+                : convertDateStringToDateObject(day).toString()
+            ] || []
+          console.log('responder.timesegments', responder.timesegments)
+          console.log('times', times)
 
           times.forEach((timeSlot) => {
+            console.log('timeSlot', timeSlot)
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 

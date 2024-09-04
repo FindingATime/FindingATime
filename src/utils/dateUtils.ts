@@ -22,3 +22,17 @@ export function sortDates(config: string[]) {
   )
   return sortedConfig
 }
+
+export const convertDateToMonthDayYear = (date: Date) => {
+  return `${
+    months[date.getUTCMonth()]
+  } ${date.getUTCDate()} ${date.getUTCFullYear()}`
+}
+
+export const convertDateStringToDateObject = (date: string) => {
+  const dateParts = date.split(' ')
+  const month = months.indexOf(dateParts[0])
+  const day = parseInt(dateParts[1])
+  const year = parseInt(dateParts[2])
+  return new Date(year, month, day)
+}

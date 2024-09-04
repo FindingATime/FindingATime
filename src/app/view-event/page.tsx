@@ -62,9 +62,11 @@ const ViewEvent = () => {
           .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
           .map(
             (date) =>
-              months[new Date(date).getMonth()] +
+              months[new Date(date).getUTCMonth()] +
               ' ' +
-              new Date(date).getDate(),
+              new Date(date).getUTCDate() +
+              ' ' +
+              new Date(date).getUTCFullYear(),
           )
       : Object.keys(config)
           .filter((day) => config[day])
