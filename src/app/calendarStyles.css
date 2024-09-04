@@ -1,28 +1,5 @@
-.active {
-  background-color: rgb(70, 247, 0);
-  color: #000;
-  width: 25px;
-  height: 25px;
-  border: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: 0.3s;
-  border: 1px solid white;
-}
-
-.disabled {
-  background-color: rgb(194, 3, 3);
-  color: black;
-  width: 25px;
-  height: 25px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: 0.3s;
-  border: 1px solid white;
+.btn-gap {
+  border: 1px solid #ffffff;
 }
 
 .active:hover {

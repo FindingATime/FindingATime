@@ -52,7 +52,6 @@ export async function getAttendees(eventid: UUID) {
       return response.json()
     })
     .then((data) => {
-      console.log('Attendees:', data)
       return data
     })
     .catch((error) => {
@@ -84,12 +83,8 @@ export async function addAttendee(
       }
       return response.json()
     })
-    .then((data) => {
-      console.log('Success, attendee added:', data)
-    })
-    .catch((error) => {
-      console.error('Error:', error.message)
-    })
+    .then((data) => {})
+    .catch((error) => {})
 }
 
 export async function editAttendee(
@@ -117,7 +112,6 @@ export async function editAttendee(
       return response.json()
     })
     .then((data) => {
-      console.log('Success, attendee edited:', data)
       return data
     })
     .catch((error) => {

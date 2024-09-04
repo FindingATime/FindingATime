@@ -73,9 +73,6 @@ export default function CreateEvent() {
       Sat: false,
       Sun: false,
     }
-    console.log('title', title)
-    console.log('location', location)
-    console.log('timezone', timezone)
     if (title?.length === 0) {
       setTitle(null)
     }
@@ -86,7 +83,6 @@ export default function CreateEvent() {
       setTimezone(null)
     }
     if (config?.length === 0) {
-      console.log('config is empty')
       setConfig(null)
     }
 

@@ -179,8 +179,6 @@ const EventForm = ({
                     ' ' +
                     (value as Date).getUTCDate()
                   let newSpecificDays: string[] = config ? config : []
-                  console.log('config', config)
-                  console.log('newSpecificDays', newSpecificDays)
                   if (
                     !newSpecificDays?.some((day) => {
                       const month = months[new Date(day).getUTCMonth()]
@@ -189,7 +187,6 @@ const EventForm = ({
                     }) &&
                     (newSpecificDays?.length as number) < 7
                   ) {
-                    console.log(dateValue.toString())
                     // 7 day limit
                     // Add the value date to the specificDays array
                     if (config) {
@@ -200,7 +197,6 @@ const EventForm = ({
                     } else {
                       newSpecificDays = [dateValue.toString()]
                     }
-                    console.log('newSpecificDays if', newSpecificDays)
                     setConfig(newSpecificDays)
                   } else {
                     // Remove the value date from the specificDays array
@@ -209,7 +205,6 @@ const EventForm = ({
                       const dateDay = new Date(day).getUTCDate()
                       return month + ' ' + dateDay !== monthDate
                     })
-                    console.log('newSpecificDays else', newSpecificDays)
                     setConfig(
                       (prevConfig) =>
                         prevConfig?.filter((day) => {
@@ -244,11 +239,11 @@ const EventForm = ({
                       new Date().setDate(new Date().getDate() + 60),
                     ).getTime() < date.getTime()
                   ) {
-                    return 'disabled'
+                    return 'btn-primary btn-active btn-error btn-gap'
                   }
                   return view === 'month' && config?.includes(date.toString())
-                    ? 'active'
-                    : 'available'
+                    ? 'btn-primary btn-active btn-success btn-gap'
+                    : 'btn-primary available'
                 }}
               />
 
