@@ -104,13 +104,6 @@ export async function POST(request: Request) {
     }
   }
 
-  if (!body.config.days || body.config.days.length === 0) {
-    return NextResponse.json(
-      { message: 'Config cannot be empty' },
-      { status: 400 },
-    )
-  }
-
   // if mode is specific, check if dates in config are valid dates in format (YYYY-MM-DD)
   if (body.mode === 'specific') {
     for (let i = 0; i < body.config.days.length; i++) {
@@ -120,6 +113,15 @@ export async function POST(request: Request) {
           { status: 400 },
         )
       }
+    }
+    if (
+      !body.config.days ||
+      (body.config.days && body.config.days.length === 0)
+    ) {
+      return NextResponse.json(
+        { message: 'Config cannot be empty' },
+        { status: 400 },
+      )
     }
   }
 
