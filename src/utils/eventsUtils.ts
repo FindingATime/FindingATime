@@ -6,6 +6,7 @@ export interface Event {
   title: string
   starttime: string
   endtime: string
+  timezone: string
   location: string
   config: { [key: string]: boolean }
   mode: string
@@ -87,11 +88,9 @@ export const getMyEvents = async (creatorId: UUID) => {
       return response.json()
     })
     .then((data) => {
-      console.log('Success:', data)
       return data
     })
     .catch((error) => {
-      console.error('Error:', error.message)
       return error
     })
 }

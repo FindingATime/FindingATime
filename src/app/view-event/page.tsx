@@ -7,7 +7,7 @@ import {
   editAttendee,
 } from '@/utils/attendeesUtils'
 
-import { Suspense, useEffect, useState, useRef } from 'react'
+import { Suspense, useEffect, useState, useRef, lazy } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { getEvent, Event } from '@/utils/eventsUtils'
 import { Schedule } from '@/utils/attendeesUtils'
@@ -89,6 +89,7 @@ const ViewEvent = () => {
           title: data[0].title,
           starttime: data[0].starttime,
           endtime: data[0].endtime,
+          timezone: data[0].timezone,
           location: data[0].location,
           config: data[0].config || {},
           mode: data[0].mode || 'weekly', // TODO: need to modify to include both weekly & specific dates
@@ -131,7 +132,6 @@ const ViewEvent = () => {
       .then((data) => {
         if (data) {
           //format attendee data
-          console.log('DATA: ', data)
           const formattedData = formatAttendeeData(data)
           setResponders(formattedData) // Set the responders state with the fetched data
         } else {
@@ -147,23 +147,11 @@ const ViewEvent = () => {
           ) &&
           !isSignedIn
         ) {
-          console.log(
-            'New User PROBABLY BUG HERE ENTERING AGAIN WHEN USEEFFECT IS RETRIGGERD WHEN USERAVAILABILITY IS UPDATED',
-          )
           setIsNewUser(true)
           setIsSignedIn(false)
         } else {
-          console.log('Old User')
           setIsNewUser(false)
           setIsSignedIn(true)
-          console.log(
-            'users availability: ',
-            data.find(
-              (attendee: Attendee) =>
-                (attendee.attendee as UUID) ===
-                (localStorage.getItem('username') as UUID),
-            )?.timesegments,
-          )
           setSchedule(
             data.find(
               (attendee: Attendee) =>
@@ -174,11 +162,9 @@ const ViewEvent = () => {
         }
       })
       .catch((error) => {
-        console.error('Error fetching attendees:', error.message)
         setError('Failed to load attendees')
       })
     setIsAvailable(false)
-    console.log('User availability updated: ', userAvailability)
   }, [eventId, userAvailability])
 
   const openModal = () => {
@@ -206,6 +192,7 @@ const ViewEvent = () => {
               starttime={event.starttime}
               endtime={event.endtime}
               location={event.location}
+              timezone={event.timezone}
               key={event.id}
             />
           )}
@@ -319,7 +306,6 @@ const ViewEvent = () => {
                   className="btn btn-primary rounded-full px-4 py-2 text-white"
                   onClick={() => {
                     if (isNewUser) {
-                      console.log('Adding user: ', userName)
                       createUser(userName).then((data) => {
                         addAttendee(
                           eventId as UUID,
