@@ -180,11 +180,11 @@ const EventForm = ({
                   const dateValue = value as Date
                   dateValue.setHours(0, 0, 0, 0)
                   const monthDateYear =
-                    months[(value as Date).getUTCMonth()] +
+                    months[dateValue.getUTCMonth()] +
                     ' ' +
-                    (value as Date).getUTCDate() +
+                    dateValue.getUTCDate() +
                     ' ' +
-                    (value as Date).getUTCFullYear()
+                    dateValue.getUTCFullYear()
                   let newSpecificDays: string[] = config ? config : []
                   if (
                     !newSpecificDays?.some((day) => {
@@ -215,7 +215,7 @@ const EventForm = ({
                       const dateDay = new Date(day).getUTCDate()
                       const year = new Date(day).getUTCFullYear()
                       return (
-                        month + ' ' + dateDay + ' ' + year === monthDateYear
+                        month + ' ' + dateDay + ' ' + year !== monthDateYear
                       )
                     })
                     setConfig(
@@ -225,7 +225,7 @@ const EventForm = ({
                           const dateDay = new Date(day).getUTCDate()
                           const year = new Date(day).getUTCFullYear()
                           return (
-                            month + ' ' + dateDay + ' ' + year === monthDateYear
+                            month + ' ' + dateDay + ' ' + year !== monthDateYear
                           )
                         }) || [],
                     )

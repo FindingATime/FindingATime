@@ -68,7 +68,8 @@ const Grid = ({
   useEffect(() => {
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      const sortedConfig = config?.sort(
+      let sortedConfig = config as string[]
+      sortedConfig = sortedConfig?.sort(
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig as string[])
@@ -76,7 +77,7 @@ const Grid = ({
     } else {
       // Sort dates in ascending order
       let newConfig: string[] = config as string[]
-      newConfig = config?.sort(
+      newConfig = newConfig?.sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       ) as string[]
       newConfig = newConfig?.map((date) => {
@@ -93,16 +94,23 @@ const Grid = ({
     // Only populate grid if in view mode and responder's time segments is not empty
     if (!isAvailable && responders) {
       const newGrid = initialGrid()
+      // console.log('config', config)
+      // console.log('responders', responders)
+      // console.log('schedule user', schedule)
 
       // loop through each day and each responder's timesegments
       config?.forEach((day, colIndex) => {
         responders?.forEach((responder) => {
+          // console.log('responder', responder)
+          // console.log('convertDateStringToDateObject(day).toString()', convertDateStringToDateObject(day).toString())
           const times =
             responder.timesegments[
               mode === 'weekly'
                 ? day
                 : convertDateStringToDateObject(day).toString()
             ] || []
+
+          // console.log('times', times)
 
           times.forEach((timeSlot) => {
             const startIndex = timeArray.indexOf(timeSlot.beginning)
@@ -116,7 +124,7 @@ const Grid = ({
             // Check if the start and end index are valid
             if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
               for (let i = startIndex; i < endIndex; i++) {
-                // Instead of just setting to true, increment a counter
+                // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
                 newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
               }
             }
@@ -155,7 +163,14 @@ const Grid = ({
     if (!isAvailable) {
       setHoveredCell({ rowIndex, colIndex })
       if (onCellHover && config) {
-        onCellHover(config[colIndex], timeArray[rowIndex])
+        // console.log('config[colIndex]', config[colIndex])
+        // console.log('timeArray[rowIndex]', timeArray[rowIndex])
+        const date =
+          convertDateStringToDateObject(config[colIndex]).toString() !==
+          'Invalid Date'
+            ? convertDateStringToDateObject(config[colIndex]).toString()
+            : config[colIndex]
+        onCellHover(date, timeArray[rowIndex])
       }
     }
     if (isSelecting) {
@@ -192,8 +207,20 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
-    if (config && config[colIndex] in schedule) {
-      let timeSegments = schedule[config[colIndex]]
+    // console.log('schedule', schedule)
+    if (
+      config &&
+      (convertDateStringToDateObject(config[colIndex]).toString() !==
+      'Invalid Date'
+        ? convertDateStringToDateObject(config[colIndex]).toString()
+        : config[colIndex]) in schedule
+    ) {
+      const date =
+        convertDateStringToDateObject(config[colIndex]).toString() !==
+        'Invalid Date'
+          ? convertDateStringToDateObject(config[colIndex]).toString()
+          : config[colIndex]
+      let timeSegments = schedule[date]
 
       // Check if the time segment is already in the schedule
       const segmentIndex = timeSegments.findIndex(
@@ -210,9 +237,16 @@ const Grid = ({
         timeSegments.push(selectedTimeSegment)
       }
 
-      schedule[config[colIndex]] = timeSegments
+      schedule[date] = timeSegments
+      // console.log('colIndex', colIndex)
+      // console.log('config[colIndex]', date)
     } else if (config) {
-      addDateToSchedule(config[colIndex], [selectedTimeSegment])
+      const date =
+        convertDateStringToDateObject(config[colIndex]).toString() !==
+        'Invalid Date'
+          ? convertDateStringToDateObject(config[colIndex]).toString()
+          : config[colIndex]
+      addDateToSchedule(date, [selectedTimeSegment])
     }
     setGrid(newGrid)
   }
