@@ -35,10 +35,13 @@ const Responses = ({ responders, hoveredCell }: ResponsesProps) => {
   // Filter responders based on availability for the hovered cell
   const availableResponders = hoveredCell // AD: refactor
     ? responders.filter((responder) => {
+        // console.log('hoveredCell', hoveredCell)
+        // console.log('hoveredCell.day', hoveredCell.day)
         const daySegments = responder.timesegments[hoveredCell.day]
-        return daySegments?.some((slot) =>
-          isTimeInRange(hoveredCell.time, slot.beginning, slot.end),
-        )
+        return daySegments?.some((slot) => {
+          // console.log('slot', slot)
+          return isTimeInRange(hoveredCell.time, slot.beginning, slot.end)
+        })
       })
     : []
 

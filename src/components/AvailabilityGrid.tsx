@@ -59,7 +59,9 @@ const Grid = ({
   } | null>(null)
 
   const addDateToSchedule = (date: string, timeSegments: TimeSegment[]) => {
-    schedule[date] = timeSegments
+    const newSchedule = { ...schedule }
+    newSchedule[date] = timeSegments
+    setSchedule(newSchedule)
   }
 
   // Populate the grid with creator's availability times saved in the database (view-event)
@@ -70,8 +72,7 @@ const Grid = ({
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig as string[])
-      // setDates(config)
-      setSchedule({})
+      setSchedule({}) // if user chooses new dates, clear the schedule
     } else {
       // Sort dates in ascending order
       let newConfig: string[] = config as string[]
@@ -86,35 +87,24 @@ const Grid = ({
         )
       })
       setDates(newConfig)
-      setSchedule({})
+      setSchedule({}) // if user chooses new dates, clear the schedule
     }
 
     // Only populate grid if in view mode and responder's time segments is not empty
     if (!isAvailable && responders) {
       const newGrid = initialGrid()
-      console.log('newGrid', newGrid)
-      console.log('config', config)
-      console.log('responders', responders)
 
       // loop through each day and each responder's timesegments
       config?.forEach((day, colIndex) => {
-        console.log('day', day)
         responders?.forEach((responder) => {
-          console.log(
-            'convertDateStringToDateObject(day).toString()',
-            convertDateStringToDateObject(day).toString(),
-          )
           const times =
             responder.timesegments[
               mode === 'weekly'
                 ? day
                 : convertDateStringToDateObject(day).toString()
             ] || []
-          console.log('responder.timesegments', responder.timesegments)
-          console.log('times', times)
 
           times.forEach((timeSlot) => {
-            console.log('timeSlot', timeSlot)
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 

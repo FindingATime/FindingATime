@@ -29,13 +29,12 @@ const ViewEvent = () => {
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string>('') // set to name entered when adding availability
-  const [userAvailability, setUserAvailability] = useState<Schedule>({}) // set to name entered when adding availability
-  const [config, setConfig] = useState<string[]>([]) // set to name entered when adding availability
+  const [userAvailability, setUserAvailability] = useState<Schedule>({})
 
-  const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in
+  const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
-  const [isNewUser, setIsNewUser] = useState(false) // New state to control visibility of buttons
-  const [isSignedIn, setIsSignedIn] = useState(false) // New state to control visibility of buttons
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -155,6 +154,14 @@ const ViewEvent = () => {
           setIsNewUser(false)
           setIsSignedIn(true)
           setSchedule(
+            data.find(
+              (attendee: Attendee) =>
+                (attendee.attendee as UUID) ===
+                (localStorage.getItem('username') as UUID),
+            )?.timesegments,
+          )
+          console.log(
+            'schedule in view',
             data.find(
               (attendee: Attendee) =>
                 (attendee.attendee as UUID) ===
@@ -335,6 +342,7 @@ const ViewEvent = () => {
                         setUserAvailability(schedule)
                       })
                     }
+                    console.log('schedule in add button', schedule) // this schedule is for the current user only
                   }}
                 >
                   {isNewUser ? 'Add Availability' : 'Save'}
