@@ -25,7 +25,7 @@ export default function Header() {
             <p className="text-primary">Finding A Time</p>
           </Link>
         </div>
-        <div>
+        <div className="flex items-center">
           {currentPath !== '/home' && (
             <Link href="/home">
               <button className="btn btn-primary ml-3">Dashboard</button>
@@ -39,6 +39,24 @@ export default function Header() {
           <Link href="/#FAQ">
             <button className="btn btn-primary ml-3">FAQ</button>
           </Link>
+          <div className="flex flex-col items-start items-center">
+            <label className="text-md mb-1 font-medium">☀️/🌙</label>
+            <input
+              type="checkbox"
+              className="toggle toggle-lg mx-4"
+              name="theme-toggle"
+              title="Toggle theme"
+              defaultChecked={
+                typeof window !== 'undefined' &&
+                window.matchMedia('(prefers-color-scheme: dracula)').matches
+              }
+              onClick={(e) => {
+                const target = e.target as HTMLInputElement
+                let newTheme = target.checked ? 'dracula' : 'pastel'
+                document.documentElement.setAttribute('data-theme', newTheme)
+              }}
+            />
+          </div>
         </div>
       </div>
     </header>
