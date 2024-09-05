@@ -8,10 +8,10 @@ import {
 } from '@/utils/attendeesUtils'
 
 import { Suspense, useEffect, useState, useRef, lazy } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { getEvent, Event } from '@/utils/eventsUtils'
 import { Schedule } from '@/utils/attendeesUtils'
-import { createUser } from '@/utils/userUtils'
+import { createUser, getUser } from '@/utils/userUtils'
 import { days, months } from '@/utils/dateUtils'
 
 import Header from '@/components/Header'
@@ -82,6 +82,13 @@ const ViewEvent = () => {
   }
 
   useEffect(() => {
+    if (localStorage.getItem('username')) {
+      getUser(localStorage.getItem('username') as UUID).then((data) => {
+        if (data) {
+          setUserName(data[0].name)
+        }
+      })
+    }
     getEvent(eventId as UUID)
       .then(async (data) => {
         const newEvent: Event = {
@@ -153,21 +160,6 @@ const ViewEvent = () => {
         } else {
           setIsNewUser(false)
           setIsSignedIn(true)
-          setSchedule(
-            data.find(
-              (attendee: Attendee) =>
-                (attendee.attendee as UUID) ===
-                (localStorage.getItem('username') as UUID),
-            )?.timesegments,
-          )
-          console.log(
-            'schedule in view',
-            data.find(
-              (attendee: Attendee) =>
-                (attendee.attendee as UUID) ===
-                (localStorage.getItem('username') as UUID),
-            )?.timesegments,
-          )
         }
       })
       .catch((error) => {
@@ -235,12 +227,17 @@ const ViewEvent = () => {
           <div //button container for positioning "Save" and "Cancel" buttons
             className="flex flex-row justify-center"
           >
-            {isNewUser && !isSignedIn ? (
+            {isNewUser && !isSignedIn && !isButtonsVisible ? (
               <div>
                 <button
                   className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
                   onClick={() => {
-                    openModal()
+                    if (!localStorage.getItem('username')) {
+                      openModal()
+                    } else {
+                      setIsAvailable(true) // Update isAvailable to true when name is entered
+                      setIsButtonsVisible(true) // Show buttons when user signs in
+                    }
                   }}
                 >
                   Add Availability
@@ -325,7 +322,15 @@ const ViewEvent = () => {
                           setIsSignedIn(true)
                           setIsNewUser(false)
                           setUserName('') // Reset username when user saves
+                          setSchedule(schedule)
                           setUserAvailability(schedule)
+                          getAttendees(eventId as UUID).then((data) => {
+                            if (data) {
+                              //format attendee data
+                              const formattedData = formatAttendeeData(data)
+                              setResponders(formattedData) // Set the responders state with the fetched data
+                            }
+                          })
                         })
                       })
                     } else {
@@ -339,10 +344,17 @@ const ViewEvent = () => {
                         setIsSignedIn(true)
                         setIsNewUser(false)
                         setUserName('') // Reset username when user saves
+                        setSchedule(schedule)
                         setUserAvailability(schedule)
+                        getAttendees(eventId as UUID).then((data) => {
+                          if (data) {
+                            //format attendee data
+                            const formattedData = formatAttendeeData(data)
+                            setResponders(formattedData) // Set the responders state with the fetched data
+                          }
+                        })
                       })
                     }
-                    console.log('schedule in add button', schedule) // this schedule is for the current user only
                   }}
                 >
                   {isNewUser ? 'Add Availability' : 'Save'}

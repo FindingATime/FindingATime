@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { generateTimeRange } from '@/utils/timeUtils'
 import { months, convertDateStringToDateObject } from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
+import { userAgent } from 'next/server'
 
 interface GridProps {
   earliestTime: string
@@ -94,23 +95,16 @@ const Grid = ({
     // Only populate grid if in view mode and responder's time segments is not empty
     if (!isAvailable && responders) {
       const newGrid = initialGrid()
-      // console.log('config', config)
-      // console.log('responders', responders)
-      // console.log('schedule user', schedule)
 
       // loop through each day and each responder's timesegments
       config?.forEach((day, colIndex) => {
         responders?.forEach((responder) => {
-          // console.log('responder', responder)
-          // console.log('convertDateStringToDateObject(day).toString()', convertDateStringToDateObject(day).toString())
           const times =
             responder.timesegments[
               mode === 'weekly'
                 ? day
                 : convertDateStringToDateObject(day).toString()
             ] || []
-
-          // console.log('times', times)
 
           times.forEach((timeSlot) => {
             const startIndex = timeArray.indexOf(timeSlot.beginning)
@@ -163,8 +157,6 @@ const Grid = ({
     if (!isAvailable) {
       setHoveredCell({ rowIndex, colIndex })
       if (onCellHover && config) {
-        // console.log('config[colIndex]', config[colIndex])
-        // console.log('timeArray[rowIndex]', timeArray[rowIndex])
         const date =
           convertDateStringToDateObject(config[colIndex]).toString() !==
           'Invalid Date'
@@ -207,7 +199,6 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
-    // console.log('schedule', schedule)
     if (
       config &&
       (convertDateStringToDateObject(config[colIndex]).toString() !==
@@ -238,8 +229,6 @@ const Grid = ({
       }
 
       schedule[date] = timeSegments
-      // console.log('colIndex', colIndex)
-      // console.log('config[colIndex]', date)
     } else if (config) {
       const date =
         convertDateStringToDateObject(config[colIndex]).toString() !==
