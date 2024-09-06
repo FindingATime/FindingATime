@@ -119,9 +119,20 @@ const Grid = ({
               endIndex = timeArray.length // Set to the end of the timeArray
             }
 
+            console.log('timeslot', timeSlot)
+            console.log('startIndex', startIndex)
+            console.log('endIndex', endIndex)
+
             // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
-            newGrid[startIndex][colIndex] =
-              (newGrid[startIndex][colIndex] || 0) + 1
+            for (let i = startIndex; i < endIndex; i++) {
+              newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
+            }
+
+            // edge case where start and end times are the same so endIndex is 0 and startIndex is timeArray.length - 2
+            if (endIndex === 0) {
+              newGrid[startIndex][colIndex] =
+                (newGrid[startIndex][colIndex] || 0) + 1
+            }
           })
         })
       })
