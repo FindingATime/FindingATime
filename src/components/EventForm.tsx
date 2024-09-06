@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { days, months, modeOptions } from '@/utils/dateUtils'
+import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
 import { useState } from 'react'
 import Calendar from 'react-calendar'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
@@ -188,12 +188,7 @@ const EventForm = ({
                   let newSpecificDays: string[] = config ? config : []
                   if (
                     !newSpecificDays?.some((day) => {
-                      const month = months[new Date(day).getUTCMonth()]
-                      const dateDay = new Date(day).getUTCDate()
-                      const year = new Date(day).getUTCFullYear()
-                      return (
-                        month + ' ' + dateDay + ' ' + year === monthDateYear
-                      )
+                      isSameDate(day, monthDateYear)
                     }) &&
                     (newSpecificDays?.length as number) < maxDaysSelectable
                   ) {
@@ -211,22 +206,12 @@ const EventForm = ({
                   } else {
                     // Remove the value date from the specificDays array
                     newSpecificDays = newSpecificDays?.filter((day) => {
-                      const month = months[new Date(day).getUTCMonth()]
-                      const dateDay = new Date(day).getUTCDate()
-                      const year = new Date(day).getUTCFullYear()
-                      return (
-                        month + ' ' + dateDay + ' ' + year !== monthDateYear
-                      )
+                      return !isSameDate(day, monthDateYear)
                     })
                     setConfig(
                       (prevConfig) =>
                         prevConfig?.filter((day) => {
-                          const month = months[new Date(day).getUTCMonth()]
-                          const dateDay = new Date(day).getUTCDate()
-                          const year = new Date(day).getUTCFullYear()
-                          return (
-                            month + ' ' + dateDay + ' ' + year !== monthDateYear
-                          )
+                          return !isSameDate(day, monthDateYear)
                         }) || [],
                     )
                   }

@@ -1,7 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { generateTimeRange } from '@/utils/timeUtils'
-import { months, convertDateStringToDateObject } from '@/utils/dateUtils'
+import {
+  months,
+  convertDateStringToDateObject,
+  formattedDate,
+} from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { userAgent } from 'next/server'
 
@@ -157,11 +161,7 @@ const Grid = ({
     if (!isAvailable) {
       setHoveredCell({ rowIndex, colIndex })
       if (onCellHover && config) {
-        const date =
-          convertDateStringToDateObject(config[colIndex]).toString() !==
-          'Invalid Date'
-            ? convertDateStringToDateObject(config[colIndex]).toString()
-            : config[colIndex]
+        const date = formattedDate(config[colIndex])
         onCellHover(date, timeArray[rowIndex])
       }
     }
@@ -206,11 +206,7 @@ const Grid = ({
         ? convertDateStringToDateObject(config[colIndex]).toString()
         : config[colIndex]) in schedule
     ) {
-      const date =
-        convertDateStringToDateObject(config[colIndex]).toString() !==
-        'Invalid Date'
-          ? convertDateStringToDateObject(config[colIndex]).toString()
-          : config[colIndex]
+      const date = formattedDate(config[colIndex])
       let timeSegments = schedule[date]
 
       // Check if the time segment is already in the schedule
@@ -230,11 +226,7 @@ const Grid = ({
 
       schedule[date] = timeSegments
     } else if (config) {
-      const date =
-        convertDateStringToDateObject(config[colIndex]).toString() !==
-        'Invalid Date'
-          ? convertDateStringToDateObject(config[colIndex]).toString()
-          : config[colIndex]
+      const date = formattedDate(config[colIndex])
       addDateToSchedule(date, [selectedTimeSegment])
     }
     setGrid(newGrid)
