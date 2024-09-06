@@ -44,7 +44,7 @@ const Grid = ({
   // Grid dimensions
   const dimensions = {
     width: config?.length || 1, // default to 1 if daysOfWeek is empty
-    height: timeArray.length - 2,
+    height: timeArray.length - 1, // -1 to not add extra row at the end of the grid
   }
 
   // Function to Initialize and populate an empty 2d array
@@ -249,7 +249,7 @@ const Grid = ({
         >
           {timeArray.map(
             (time, index) =>
-              index !== timeArray.length - 1 && (
+              index !== timeArray.length && (
                 <div
                   key={index}
                   className="flex items-start justify-start border-gray-300 pr-2 text-xs text-gray-600"
@@ -297,7 +297,7 @@ const Grid = ({
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
-              gridTemplateRows: `repeat(${dimensions.height - 2}, 1fr)`,
+              gridTemplateRows: `repeat(${dimensions.height}, 1fr)`,
               width: '100%',
               height: `${dimensions.height * 32 + 1}px`, // 32px height per row and add 1px to height to account for border
             }}
