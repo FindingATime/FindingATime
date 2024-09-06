@@ -114,10 +114,6 @@ const Grid = ({
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 
-            console.log('timeslot', timeSlot)
-            console.log('startIndex', startIndex)
-            console.log('endIndex', endIndex)
-
             // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
             for (let i = startIndex; i < endIndex; i++) {
               newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
