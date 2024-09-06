@@ -1,25 +1,53 @@
-.active {
-  background-color: green;
-  color: #000;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: 0.3s;
+.btn-gap {
+  border: 1px solid #ffffff;
 }
 
-.disabled {
-  background-color: #2d4343;
-  color: #000;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+.active:hover {
+  background-color: darkgreen;
+  color: #fff;
+}
+
+.available:hover {
+  background-color: green;
+  color: #fff;
+}
+
+.calendar-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
-  transition: 0.3s;
+  flex-direction: column;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.react-calendar__navigation__prev2-button {
+  display: none;
+}
+
+.react-calendar__navigation__next2-button {
+  display: none;
+}
+
+.react-calendar__navigation button {
+  margin: 0 10px;
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f0f0f0;
+  color: #ccc;
+}
+
+.react-calendar__navigation button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  color: #000;
+}
+
+.react-calendar__navigation__label {
+  pointer-events: none;
 }

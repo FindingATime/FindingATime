@@ -49,6 +49,7 @@
     "react-calendar": "^5.0.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
+    "react-query": "^3.39.3",
     "tailwind-merge": "^2.2.0",
     "undici": "^5.28.2",
     "vanilla-cookieconsent": "^3.0.1"

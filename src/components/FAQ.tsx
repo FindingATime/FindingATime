@@ -29,12 +29,12 @@ export default function FAQ() {
         <div key={index} className="mb-4">
           <button
             onClick={() => toggleFAQ(index)}
-            className="w-full rounded-lg bg-gray-200 p-4 text-left focus:outline-none focus:ring-2 focus:ring-primary"
+            className="btn btn-secondary w-full rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <span className="text-lg font-medium">{faq.question}</span>
           </button>
           {openIndex === index && (
-            <div className="mt-2 rounded-lg bg-gray-100 p-4">
+            <div className="mt-2 rounded-lg p-4">
               <p>{faq.answer}</p>
             </div>
           )}

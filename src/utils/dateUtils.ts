@@ -22,3 +22,32 @@ export function sortDates(config: string[]) {
   )
   return sortedConfig
 }
+
+export const convertDateToMonthDayYear = (date: Date) => {
+  return `${
+    months[date.getUTCMonth()]
+  } ${date.getUTCDate()} ${date.getUTCFullYear()}`
+}
+
+export const convertDateStringToDateObject = (date: string) => {
+  const dateParts = date.split(' ')
+  const month = months.indexOf(dateParts[0])
+  const day = parseInt(dateParts[1])
+  const year = parseInt(dateParts[2])
+  return new Date(year, month, day)
+}
+
+// compare dates, where date1 is the toString of a date object and date2 is a string in the format 'Month Day Year'
+export const isSameDate = (date1: string, date2: string) => {
+  const month = months[new Date(date1).getUTCMonth()]
+  const dateDay = new Date(date1).getUTCDate()
+  const year = new Date(date1).getUTCFullYear()
+  return month + ' ' + dateDay + ' ' + year !== date2
+}
+
+// if date is in the format 'Month Day Year', return the date in the format of the toString of a date object
+export const formattedDate = (date: string) => {
+  return convertDateStringToDateObject(date).toString() !== 'Invalid Date'
+    ? convertDateStringToDateObject(date).toString()
+    : date
+}

@@ -12,14 +12,14 @@ import Responses from '@/components/Responses'
 import Header from '@/components/Header'
 
 export default function CreateEvent() {
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState<string | null>('')
   const [description, setDescription] = useState('')
-  const [location, setLocation] = useState('')
+  const [location, setLocation] = useState<string | null>('')
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
-  const [config, setConfig] = useState<string[]>([])
-  const [timezone, setTimezone] = useState('')
+  const [config, setConfig] = useState<string[] | null>([])
+  const [timezone, setTimezone] = useState<string | null>('')
   const [schedule, setSchedule] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
@@ -73,19 +73,31 @@ export default function CreateEvent() {
       Sat: false,
       Sun: false,
     }
+    if (title?.length === 0) {
+      setTitle(null)
+    }
+    if (location?.length === 0) {
+      setLocation(null)
+    }
+    if (timezone?.length === 0) {
+      setTimezone(null)
+    }
+    if (config?.length === 0) {
+      setConfig(null)
+    }
 
     const configJSON: { [key: string]: string[] } = {
       days: [],
     }
 
     if (mode === 'weekly') {
-      config.forEach((day) => {
+      config?.forEach((day) => {
         if (daysOfWeekJSON.hasOwnProperty(day)) {
           daysOfWeekJSON[day] = true
         }
       })
     } else {
-      config.forEach((day) => {
+      config?.forEach((day) => {
         configJSON.days.push(day)
       })
     }
@@ -93,12 +105,12 @@ export default function CreateEvent() {
     try {
       await addUserCreateEvent(
         userName,
-        title,
+        title as string,
         description,
         earliestTime,
         latestTime,
-        location,
-        timezone,
+        location as string,
+        timezone as string,
         mode,
         mode === 'weekly'
           ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
@@ -168,7 +180,7 @@ export default function CreateEvent() {
           >
             {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
               <button
-                className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+                className="btn btn-primary ml-4 rounded-full px-4 py-2"
                 onClick={openModal}
               >
                 Add Availability
@@ -176,13 +188,13 @@ export default function CreateEvent() {
             )}
 
             <dialog ref={dialogRef} id="username_modal" className="modal">
-              <div className="modal-box bg-white focus:outline-white ">
+              <div className="modal-box focus:outline-white ">
                 <h3 className="py-4 text-lg font-bold">Sign In</h3>
 
                 <input
                   type="text"
                   placeholder="Enter Your Name"
-                  className="input input-bordered w-full max-w-xs bg-white py-4"
+                  className="input input-bordered w-full max-w-xs py-4"
                   value={userName}
                   onChange={(e) => {
                     setUserName(e.target.value)
@@ -192,7 +204,7 @@ export default function CreateEvent() {
                 <div className="modal-action">
                   <form method="dialog">
                     <button
-                      className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+                      className="btn btn-primary ml-4 rounded-full px-4 py-2"
                       onClick={() => {
                         setIsAvailable(true) // Update isAvailable to true when name is entered
                         setIsButtonsVisible(true) // Show buttons when user signs in
@@ -218,7 +230,6 @@ export default function CreateEvent() {
             config={config}
             schedule={schedule}
             setSchedule={setSchedule}
-            setConfig={setConfig}
           />
 
           {isButtonsVisible && ( // Conditionally render buttons section
@@ -226,7 +237,7 @@ export default function CreateEvent() {
               className="flex flex-row justify-center gap-4 pt-8 "
             >
               <button
-                className="btn btn-primary rounded-full px-4 py-2 text-white"
+                className="btn btn-primary rounded-full px-4 py-2"
                 onClick={handleSubmit}
               >
                 Create Event

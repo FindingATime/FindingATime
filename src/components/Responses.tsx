@@ -36,9 +36,9 @@ const Responses = ({ responders, hoveredCell }: ResponsesProps) => {
   const availableResponders = hoveredCell // AD: refactor
     ? responders.filter((responder) => {
         const daySegments = responder.timesegments[hoveredCell.day]
-        return daySegments?.some((slot) =>
-          isTimeInRange(hoveredCell.time, slot.beginning, slot.end),
-        )
+        return daySegments?.some((slot) => {
+          return isTimeInRange(hoveredCell.time, slot.beginning, slot.end)
+        })
       })
     : []
 

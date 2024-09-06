@@ -7,11 +7,11 @@ import {
   editAttendee,
 } from '@/utils/attendeesUtils'
 
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState, useRef, lazy } from 'react'
+import { redirect, useSearchParams } from 'next/navigation'
 import { getEvent, Event } from '@/utils/eventsUtils'
 import { Schedule } from '@/utils/attendeesUtils'
-import { createUser } from '@/utils/userUtils'
+import { createUser, getUser } from '@/utils/userUtils'
 import { days, months } from '@/utils/dateUtils'
 
 import Header from '@/components/Header'
@@ -29,13 +29,12 @@ const ViewEvent = () => {
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string>('') // set to name entered when adding availability
-  const [userAvailability, setUserAvailability] = useState<Schedule>({}) // set to name entered when adding availability
-  const [config, setConfig] = useState<string[]>([]) // set to name entered when adding availability
+  const [userAvailability, setUserAvailability] = useState<Schedule>({})
 
-  const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in
+  const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
-  const [isNewUser, setIsNewUser] = useState(false) // New state to control visibility of buttons
-  const [isSignedIn, setIsSignedIn] = useState(false) // New state to control visibility of buttons
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -62,9 +61,11 @@ const ViewEvent = () => {
           .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
           .map(
             (date) =>
-              months[new Date(date).getMonth()] +
+              months[new Date(date).getUTCMonth()] +
               ' ' +
-              new Date(date).getDate(),
+              new Date(date).getUTCDate() +
+              ' ' +
+              new Date(date).getUTCFullYear(),
           )
       : Object.keys(config)
           .filter((day) => config[day])
@@ -81,6 +82,13 @@ const ViewEvent = () => {
   }
 
   useEffect(() => {
+    if (localStorage.getItem('username')) {
+      getUser(localStorage.getItem('username') as UUID).then((data) => {
+        if (data) {
+          setUserName(data[0].name)
+        }
+      })
+    }
     getEvent(eventId as UUID)
       .then(async (data) => {
         const newEvent: Event = {
@@ -132,7 +140,6 @@ const ViewEvent = () => {
       .then((data) => {
         if (data) {
           //format attendee data
-          console.log('DATA: ', data)
           const formattedData = formatAttendeeData(data)
           setResponders(formattedData) // Set the responders state with the fetched data
         } else {
@@ -148,38 +155,17 @@ const ViewEvent = () => {
           ) &&
           !isSignedIn
         ) {
-          console.log(
-            'New User PROBABLY BUG HERE ENTERING AGAIN WHEN USEEFFECT IS RETRIGGERD WHEN USERAVAILABILITY IS UPDATED',
-          )
           setIsNewUser(true)
           setIsSignedIn(false)
         } else {
-          console.log('Old User')
           setIsNewUser(false)
           setIsSignedIn(true)
-          console.log(
-            'users availability: ',
-            data.find(
-              (attendee: Attendee) =>
-                (attendee.attendee as UUID) ===
-                (localStorage.getItem('username') as UUID),
-            )?.timesegments,
-          )
-          setSchedule(
-            data.find(
-              (attendee: Attendee) =>
-                (attendee.attendee as UUID) ===
-                (localStorage.getItem('username') as UUID),
-            )?.timesegments,
-          )
         }
       })
       .catch((error) => {
-        console.error('Error fetching attendees:', error.message)
         setError('Failed to load attendees')
       })
     setIsAvailable(false)
-    console.log('User availability updated: ', userAvailability)
   }, [eventId, userAvailability])
 
   const openModal = () => {
@@ -231,7 +217,6 @@ const ViewEvent = () => {
               responders={responders}
               mode={event.mode}
               config={convertConfigToArray(event.config)}
-              setConfig={setConfig}
               schedule={schedule}
               setSchedule={setSchedule}
               userAvailability={userAvailability}
@@ -240,14 +225,19 @@ const ViewEvent = () => {
             />
           )}
           <div //button container for positioning "Save" and "Cancel" buttons
-            className="flex flex-row justify-center gap-4 pt-8 "
+            className="flex flex-row justify-center"
           >
-            {isNewUser && !isSignedIn ? (
+            {isNewUser && !isSignedIn && !isButtonsVisible ? (
               <div>
                 <button
                   className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
                   onClick={() => {
-                    openModal()
+                    if (!localStorage.getItem('username')) {
+                      openModal()
+                    } else {
+                      setIsAvailable(true) // Update isAvailable to true when name is entered
+                      setIsButtonsVisible(true) // Show buttons when user signs in
+                    }
                   }}
                 >
                   Add Availability
@@ -321,7 +311,6 @@ const ViewEvent = () => {
                   className="btn btn-primary rounded-full px-4 py-2 text-white"
                   onClick={() => {
                     if (isNewUser) {
-                      console.log('Adding user: ', userName)
                       createUser(userName).then((data) => {
                         addAttendee(
                           eventId as UUID,
@@ -333,7 +322,15 @@ const ViewEvent = () => {
                           setIsSignedIn(true)
                           setIsNewUser(false)
                           setUserName('') // Reset username when user saves
+                          setSchedule(schedule)
                           setUserAvailability(schedule)
+                          getAttendees(eventId as UUID).then((data) => {
+                            if (data) {
+                              //format attendee data
+                              const formattedData = formatAttendeeData(data)
+                              setResponders(formattedData) // Set the responders state with the fetched data
+                            }
+                          })
                         })
                       })
                     } else {
@@ -347,7 +344,15 @@ const ViewEvent = () => {
                         setIsSignedIn(true)
                         setIsNewUser(false)
                         setUserName('') // Reset username when user saves
+                        setSchedule(schedule)
                         setUserAvailability(schedule)
+                        getAttendees(eventId as UUID).then((data) => {
+                          if (data) {
+                            //format attendee data
+                            const formattedData = formatAttendeeData(data)
+                            setResponders(formattedData) // Set the responders state with the fetched data
+                          }
+                        })
                       })
                     }
                   }}

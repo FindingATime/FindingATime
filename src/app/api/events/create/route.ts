@@ -83,13 +83,24 @@ export async function POST(request: Request) {
 
   // if mode is weekly, check if each day is a true/false boolean
   if (body.mode === 'weekly') {
+    let falseCounter = 0
     for (let i = 0; i < days.length; i++) {
       if (typeof body.config[days[i]] !== 'boolean') {
+        if (body.config[days[i]] === false) {
+          falseCounter += 1
+        }
         return NextResponse.json(
           { message: days[i] + ' must be a boolean' },
           { status: 400 },
         )
       }
+    }
+    if (falseCounter === 7) {
+      // all days are false, so no day was selected for the event
+      return NextResponse.json(
+        { message: 'At least one day must be selected' },
+        { status: 400 },
+      )
     }
   }
 
@@ -102,6 +113,12 @@ export async function POST(request: Request) {
           { status: 400 },
         )
       }
+    }
+    if (!body.config.days || body.config.days.length === 0) {
+      return NextResponse.json(
+        { message: 'Config cannot be empty' },
+        { status: 400 },
+      )
     }
   }
 
