@@ -1,8 +1,13 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { generateTimeRange } from '@/utils/timeUtils'
-import { months } from '@/utils/dateUtils'
+import {
+  months,
+  convertDateStringToDateObject,
+  formattedDate,
+} from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
+import { userAgent } from 'next/server'
 
 interface GridProps {
   earliestTime: string
@@ -39,7 +44,7 @@ const Grid = ({
   // Grid dimensions
   const dimensions = {
     width: config?.length || 1, // default to 1 if daysOfWeek is empty
-    height: timeArray.length - 1,
+    height: timeArray.length - 1, // -1 to not add extra row at the end of the grid
   }
 
   // Function to Initialize and populate an empty 2d array
@@ -59,31 +64,36 @@ const Grid = ({
   } | null>(null)
 
   const addDateToSchedule = (date: string, timeSegments: TimeSegment[]) => {
-    schedule[date] = timeSegments
+    const newSchedule = { ...schedule }
+    newSchedule[date] = timeSegments
+    setSchedule(newSchedule)
   }
 
   // Populate the grid with creator's availability times saved in the database (view-event)
   useEffect(() => {
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      const sortedConfig = config?.sort(
+      let sortedConfig = config as string[]
+      sortedConfig = sortedConfig?.sort(
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig as string[])
-      // setDates(config)
-      setSchedule({})
+      setSchedule({}) // if user chooses new dates, clear the schedule
     } else {
       // Sort dates in ascending order
       let newConfig: string[] = config as string[]
-      newConfig = config?.sort(
+      newConfig = newConfig?.sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       ) as string[]
-      newConfig = newConfig?.map(
-        (date) =>
-          months[new Date(date).getMonth()] + ' ' + new Date(date).getDate(),
-      )
+      newConfig = newConfig?.map((date) => {
+        return (
+          months[new Date(date).getUTCMonth()] +
+          ' ' +
+          new Date(date).getUTCDate()
+        )
+      })
       setDates(newConfig)
-      setSchedule({})
+      setSchedule({}) // if user chooses new dates, clear the schedule
     }
 
     // Only populate grid if in view mode and responder's time segments is not empty
@@ -93,7 +103,12 @@ const Grid = ({
       // loop through each day and each responder's timesegments
       config?.forEach((day, colIndex) => {
         responders?.forEach((responder) => {
-          const times = responder.timesegments[day] || []
+          const times =
+            responder.timesegments[
+              mode === 'weekly'
+                ? day
+                : convertDateStringToDateObject(day).toString()
+            ] || []
 
           times.forEach((timeSlot) => {
             const startIndex = timeArray.indexOf(timeSlot.beginning)
@@ -107,7 +122,7 @@ const Grid = ({
             // Check if the start and end index are valid
             if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
               for (let i = startIndex; i < endIndex; i++) {
-                // Instead of just setting to true, increment a counter
+                // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
                 newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
               }
             }
@@ -146,7 +161,8 @@ const Grid = ({
     if (!isAvailable) {
       setHoveredCell({ rowIndex, colIndex })
       if (onCellHover && config) {
-        onCellHover(config[colIndex], timeArray[rowIndex])
+        const date = formattedDate(config[colIndex])
+        onCellHover(date, timeArray[rowIndex])
       }
     }
     if (isSelecting) {
@@ -183,8 +199,15 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
-    if (config && config[colIndex] in schedule) {
-      let timeSegments = schedule[config[colIndex]]
+    if (
+      config &&
+      (convertDateStringToDateObject(config[colIndex]).toString() !==
+      'Invalid Date'
+        ? convertDateStringToDateObject(config[colIndex]).toString()
+        : config[colIndex]) in schedule
+    ) {
+      const date = formattedDate(config[colIndex])
+      let timeSegments = schedule[date]
 
       // Check if the time segment is already in the schedule
       const segmentIndex = timeSegments.findIndex(
@@ -201,9 +224,10 @@ const Grid = ({
         timeSegments.push(selectedTimeSegment)
       }
 
-      schedule[config[colIndex]] = timeSegments
+      schedule[date] = timeSegments
     } else if (config) {
-      addDateToSchedule(config[colIndex], [selectedTimeSegment])
+      const date = formattedDate(config[colIndex])
+      addDateToSchedule(date, [selectedTimeSegment])
     }
     setGrid(newGrid)
   }
@@ -219,7 +243,7 @@ const Grid = ({
           className="grid-time-headers"
           style={{
             display: 'grid',
-            gridTemplateRows: `repeat(${dimensions.height}, 64px)`,
+            gridTemplateRows: `repeat(${dimensions.height}, 32px)`,
             alignItems: 'flex-start',
           }}
         >
@@ -273,9 +297,9 @@ const Grid = ({
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
-              gridTemplateRows: `repeat(${dimensions.height - 1}, 1fr)`,
+              gridTemplateRows: `repeat(${dimensions.height}, 1fr)`,
               width: '100%',
-              height: `${dimensions.height * 64 + 1}px`, // 64px height per row and add 1px to height to account for border
+              height: `${dimensions.height * 32 + 1}px`, // 32px height per row and add 1px to height to account for border
             }}
             onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
@@ -283,7 +307,7 @@ const Grid = ({
               row.map((isSelected, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-16 items-center justify-center border-[0.5px] border-gray-200 ${
+                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
                     isSelected
                       ? isSelected === (responders?.length || 0)
                         ? 'bg-emerald-600'

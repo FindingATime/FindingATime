@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { days, months, modeOptions } from '@/utils/dateUtils'
+import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
 import { useState } from 'react'
 import Calendar from 'react-calendar'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
@@ -173,22 +173,22 @@ const EventForm = ({
                 minDate={new Date()}
                 maxDate={
                   new Date(
-                    new Date().setDate(new Date().getDate() + maxDaysAhead),
+                    new Date().setDate(new Date().getUTCDate() + maxDaysAhead),
                   )
                 } // only allow users to select dates within the next 60 days
                 onChange={(value) => {
                   const dateValue = value as Date
                   dateValue.setHours(0, 0, 0, 0)
-                  const monthDate =
-                    months[(value as Date).getUTCMonth()] +
+                  const monthDateYear =
+                    months[dateValue.getUTCMonth()] +
                     ' ' +
-                    (value as Date).getUTCDate()
+                    dateValue.getUTCDate() +
+                    ' ' +
+                    dateValue.getUTCFullYear()
                   let newSpecificDays: string[] = config ? config : []
                   if (
                     !newSpecificDays?.some((day) => {
-                      const month = months[new Date(day).getUTCMonth()]
-                      const dateDay = new Date(day).getUTCDate()
-                      return month + ' ' + dateDay === monthDate
+                      isSameDate(day, monthDateYear)
                     }) &&
                     (newSpecificDays?.length as number) < maxDaysSelectable
                   ) {
@@ -206,16 +206,12 @@ const EventForm = ({
                   } else {
                     // Remove the value date from the specificDays array
                     newSpecificDays = newSpecificDays?.filter((day) => {
-                      const month = months[new Date(day).getUTCMonth()]
-                      const dateDay = new Date(day).getUTCDate()
-                      return month + ' ' + dateDay !== monthDate
+                      return !isSameDate(day, monthDateYear)
                     })
                     setConfig(
                       (prevConfig) =>
                         prevConfig?.filter((day) => {
-                          const month = months[new Date(day).getUTCMonth()]
-                          const dateDay = new Date(day).getUTCDate()
-                          return month + ' ' + dateDay !== monthDate
+                          return !isSameDate(day, monthDateYear)
                         }) || [],
                     )
                   }
@@ -244,7 +240,9 @@ const EventForm = ({
                     // Disable past dates and days past 60 days of today
                     today.getTime() > date.getTime() ||
                     new Date(
-                      new Date().setDate(new Date().getDate() + maxDaysAhead),
+                      new Date().setDate(
+                        new Date().getUTCDate() + maxDaysAhead,
+                      ),
                     ).getTime() < date.getTime()
                   ) {
                     return 'btn-active btn-error btn-gap'
