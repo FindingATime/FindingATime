@@ -119,13 +119,9 @@ const Grid = ({
               endIndex = timeArray.length // Set to the end of the timeArray
             }
 
-            // Check if the start and end index are valid
-            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
-              for (let i = startIndex; i < endIndex; i++) {
-                // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
-                newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
-              }
-            }
+            // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
+            newGrid[startIndex][colIndex] =
+              (newGrid[startIndex][colIndex] || 0) + 1
           })
         })
       })
