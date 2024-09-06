@@ -114,11 +114,6 @@ const Grid = ({
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 
-            // Handle case where end time is not found in the timeArray (endIndex being -1)
-            if (endIndex === -1) {
-              endIndex = timeArray.length // Set to the end of the timeArray
-            }
-
             console.log('timeslot', timeSlot)
             console.log('startIndex', startIndex)
             console.log('endIndex', endIndex)
