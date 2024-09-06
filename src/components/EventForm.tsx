@@ -81,7 +81,7 @@ const EventForm = ({
           value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
-          className={`input w-full border-gray-300 bg-white text-xl font-normal focus-visible:ring-0 ${
+          className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
             title !== null && 'mb-6'
           }`}
         />
@@ -94,7 +94,7 @@ const EventForm = ({
           value={description}
           placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered mb-6 w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0"
+          className="textarea textarea-bordered mb-6 w-full border-gray-300 text-base font-normal focus-visible:ring-0"
         ></textarea>
 
         <input //Event Location text input
@@ -102,7 +102,7 @@ const EventForm = ({
           value={location as string}
           placeholder="Location"
           onChange={(e) => setLocation(e.target.value)}
-          className={`input w-full border-gray-300 bg-white text-base font-normal focus-visible:ring-0 ${
+          className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
             location !== null && 'mb-6'
           }`}
         />
@@ -116,7 +116,7 @@ const EventForm = ({
           <select //EarliestTime dropdown
             value={earliestTime}
             onChange={(e) => setEarliestTime(e.target.value)}
-            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
           >
             <option disabled value="">
               Earliest Time
@@ -133,7 +133,7 @@ const EventForm = ({
           <select //LatestTime dropdown
             value={latestTime}
             onChange={(e) => setLatestTime(e.target.value)}
-            className="select mb-6 w-full max-w-xl border-gray-300 bg-white text-base font-normal"
+            className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
           >
             <option disabled value="">
               Latest Time
@@ -264,7 +264,7 @@ const EventForm = ({
               {days.map((day) => (
                 <input
                   key={day}
-                  className="btn btn-circle btn-sm h-10 w-10 border-gray-300 bg-white text-sm font-normal"
+                  className="btn btn-circle btn-sm h-10 w-10 border-gray-300 text-sm font-normal"
                   type="checkbox"
                   name="options"
                   aria-label={day}
@@ -282,7 +282,7 @@ const EventForm = ({
         <select //Timezone dropdown
           value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
-          className="select w-full border-gray-300 bg-white text-base font-normal"
+          className="select w-full border-gray-300 text-base font-normal"
         >
           <option disabled value="">
             Timezone

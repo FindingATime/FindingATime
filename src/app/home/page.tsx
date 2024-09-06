@@ -129,11 +129,11 @@ export default function Index() {
               ))}
           </div>
           {isLoading && (
-            <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-75">
+            <div className="fixed inset-0 flex items-center justify-center bg-opacity-75">
               <span className="loading loading-dots loading-lg"></span>
             </div>
           )}
-          <div className="w-1/4 border-l border-gray-300 bg-white p-4 pl-8">
+          <div className="w-1/4 border-l border-gray-300 p-4 pl-8">
             <h1 className="mb-4 text-xl font-bold">Recently Viewed Events</h1>
             {!isLoading && upcomingEvents.length === 0 ? (
               <p>No recently viewed events.</p>

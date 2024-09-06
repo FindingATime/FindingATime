@@ -180,7 +180,7 @@ export default function CreateEvent() {
           >
             {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
               <button
-                className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+                className="btn btn-primary ml-4 rounded-full px-4 py-2"
                 onClick={openModal}
               >
                 Add Availability
@@ -188,13 +188,13 @@ export default function CreateEvent() {
             )}
 
             <dialog ref={dialogRef} id="username_modal" className="modal">
-              <div className="modal-box bg-white focus:outline-white ">
+              <div className="modal-box focus:outline-white ">
                 <h3 className="py-4 text-lg font-bold">Sign In</h3>
 
                 <input
                   type="text"
                   placeholder="Enter Your Name"
-                  className="input input-bordered w-full max-w-xs bg-white py-4"
+                  className="input input-bordered w-full max-w-xs py-4"
                   value={userName}
                   onChange={(e) => {
                     setUserName(e.target.value)
@@ -204,7 +204,7 @@ export default function CreateEvent() {
                 <div className="modal-action">
                   <form method="dialog">
                     <button
-                      className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
+                      className="btn btn-primary ml-4 rounded-full px-4 py-2"
                       onClick={() => {
                         setIsAvailable(true) // Update isAvailable to true when name is entered
                         setIsButtonsVisible(true) // Show buttons when user signs in
@@ -237,7 +237,7 @@ export default function CreateEvent() {
               className="flex flex-row justify-center gap-4 pt-8 "
             >
               <button
-                className="btn btn-primary rounded-full px-4 py-2 text-white"
+                className="btn btn-primary rounded-full px-4 py-2"
                 onClick={handleSubmit}
               >
                 Create Event
