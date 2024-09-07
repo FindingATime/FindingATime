@@ -6,6 +6,7 @@ import SignUpUserSteps from '@/components/SignUpUserSteps'
 import Header from '@/components/Header'
 import { createServerClient, createBrowserClient } from '@/utils/supabase'
 import EventCard from '@/components/EventCard'
+import Username from '@/components/Username'
 import ThemeToggle from '@/components/ThemeToggle'
 import { Suspense, useEffect, useState } from 'react'
 import { UUID } from 'crypto'
@@ -26,6 +27,7 @@ export default function Index() {
   const [eventIds, setEventIds] = useState<Set<UUID>>(new Set())
   const [username, setUsername] = useState('')
   const [isEditingUsername, setIsEditingUsername] = useState(false)
+  const [usernameTooLongError, setUsernameTooLongError] = useState(false)
 
   useEffect(() => {
     const eventIdSet = new Set<UUID>()
@@ -107,61 +109,7 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
-            <div className="mb-8 flex items-center">
-              <h1 className="pb-4 pt-4 text-xl">Username: </h1>
-              {isEditingUsername ? (
-                <div className="ml-4 flex items-center">
-                  <input
-                    className="text-l input input-sm mr-4 border-gray-300 font-normal focus-visible:ring-0"
-                    type="text"
-                    value={username}
-                    size={60}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => {
-                      setIsEditingUsername(false)
-                      editUser(
-                        localStorage.getItem('username') as UUID,
-                        username,
-                      )
-                    }}
-                  >
-                    Save
-                  </button>
-                </div>
-              ) : (
-                <div className="flex">
-                  <h1 className="ml-4 mr-2 text-xl">{username}</h1>
-                  <button>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      onClick={() => {
-                        setIsEditingUsername(true)
-                      }}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 20h9"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16.5 3.5a2.121 2.121 0 113 3L7 19.5 3 21l1.5-4L16.5 3.5z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
+            <Username />
             <div className="mb-4 flex items-center justify-start">
               <h1 className="mr-6 text-2xl font-black font-extrabold">
                 My Events

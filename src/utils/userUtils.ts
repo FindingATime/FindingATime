@@ -74,7 +74,6 @@ export async function editUser(userId: UUID, name: string) {
       return response.json()
     })
     .then((data) => {
-      console.log('data', data)
       return data
     })
     .catch((error) => {
