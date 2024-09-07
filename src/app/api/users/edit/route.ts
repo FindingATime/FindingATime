@@ -12,8 +12,9 @@ export async function PUT(request: Request) {
 
   const { data, error } = await supabase
     .from('users')
-    .update({ username: body.username })
+    .update({ name: body.name })
     .eq('id', body.id)
+    .select()
 
   if (error) {
     return NextResponse.json({

@@ -12,6 +12,7 @@ import { UUID } from 'crypto'
 import Link from 'next/link'
 import { Event, getMyEvents } from '@/utils/eventsUtils'
 import { getNumRespondents } from '@/utils/attendeesUtils'
+import { getUser, editUser } from '@/utils/userUtils'
 
 export default function Index() {
   const [myEvents, setMyEvents] = useState<Event[]>([])
@@ -23,11 +24,16 @@ export default function Index() {
   }>({})
   const [isLoading, setIsLoading] = useState(true)
   const [eventIds, setEventIds] = useState<Set<UUID>>(new Set())
+  const [username, setUsername] = useState('')
+  const [isEditingUsername, setIsEditingUsername] = useState(false)
 
   useEffect(() => {
     const eventIdSet = new Set<UUID>()
+    const promises = []
     if (localStorage.getItem('username')) {
-      getMyEvents(localStorage.getItem('username') as UUID)
+      const getEventPromise = getMyEvents(
+        localStorage.getItem('username') as UUID,
+      )
         .then((data) => {
           setMyEvents(data)
           data.forEach((event: Event) => {
@@ -37,6 +43,13 @@ export default function Index() {
         .catch((error) => {
           console.error('Error:', error.message)
         })
+      const getUserPromise = getUser(
+        localStorage.getItem('username') as UUID,
+      ).then((data) => {
+        setUsername(data[0].name)
+      })
+      promises.push(getEventPromise)
+      promises.push(getUserPromise)
     } else {
       setIsLoading(false)
     }
@@ -59,7 +72,6 @@ export default function Index() {
     // get number of respondents for each event 10 at a time to avoid hitting the API limit
     // if there is less than 10, then get the remaining
     const eventIdsArray = Array.from(eventIdSet)
-    const promises = []
     let newObj: { [key: string]: number } = {}
     for (let i = 0; i < eventIdsArray.length; i += 10) {
       // slice through 10 events at a time, unless there is less than 10 then just get remaining
@@ -95,10 +107,67 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
+            <div className="mb-8 flex items-center">
+              <h1 className="pb-4 pt-4 text-xl">Username: </h1>
+              {isEditingUsername ? (
+                <div className="ml-4 flex items-center">
+                  <input
+                    className="text-l input input-sm mr-4 border-gray-300 font-normal focus-visible:ring-0"
+                    type="text"
+                    value={username}
+                    size={60}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      setIsEditingUsername(false)
+                      editUser(
+                        localStorage.getItem('username') as UUID,
+                        username,
+                      )
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <div className="flex">
+                  <h1 className="ml-4 mr-2 text-xl">{username}</h1>
+                  <button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      onClick={() => {
+                        setIsEditingUsername(true)
+                      }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 20h9"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16.5 3.5a2.121 2.121 0 113 3L7 19.5 3 21l1.5-4L16.5 3.5z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="mb-4 flex items-center justify-start">
-              <h1 className="text-2xl font-black font-extrabold">My Events</h1>
+              <h1 className="mr-6 text-2xl font-black font-extrabold">
+                My Events
+              </h1>
               <Link href="/create-event">
-                <button className="btn btn-primary ml-6">Create Event</button>
+                <button className="btn btn-primary">Create Event</button>
               </Link>
             </div>
             {!isLoading &&
