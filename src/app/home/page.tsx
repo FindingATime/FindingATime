@@ -25,7 +25,7 @@ export default function Index() {
   }>({})
   const [isLoading, setIsLoading] = useState(true)
   const [eventIds, setEventIds] = useState<Set<UUID>>(new Set())
-  const [username, setUsername] = useState('')
+  const [username, setUsername] = useState<string | null>(null)
   const [isEditingUsername, setIsEditingUsername] = useState(false)
   const [usernameTooLongError, setUsernameTooLongError] = useState(false)
 
@@ -109,7 +109,7 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
-            <Username />
+            <Username username={username} setUsername={setUsername} />
             <div className="mb-4 flex items-center justify-start">
               <h1 className="mr-6 text-2xl font-black font-extrabold">
                 My Events
