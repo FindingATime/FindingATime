@@ -16,7 +16,9 @@ const ViewEvent = () => {
 
   return (
     <div onClick={copyToClipboard}>
-      <button className="btn btn-primary">Copy Link</button>
+      <button className="btn btn-outline btn-primary border-[1.5px]">
+        Copy Link
+      </button>
       <Toaster />
     </div>
   )

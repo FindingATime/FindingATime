@@ -19,6 +19,7 @@ import EventView from '@/components/EventView'
 import EventCard from '@/components/EventCard'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
+import EventFormView from '@/components/EventFormView'
 import { create } from 'domain'
 
 const ViewEvent = () => {
@@ -95,6 +96,7 @@ const ViewEvent = () => {
           id: eventId as UUID,
           viewTime: new Date(),
           title: data[0].title,
+          description: data[0].description,
           starttime: data[0].starttime,
           endtime: data[0].endtime,
           timezone: data[0].timezone,
@@ -187,14 +189,13 @@ const ViewEvent = () => {
           className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
         >
           {event && (
-            <EventCard // Event Card to display Event Details
-              eventId={event.id}
+            <EventFormView // EventFormView to display Event Details
               title={event.title}
-              starttime={event.starttime}
-              endtime={event.endtime}
+              description={event.description}
               location={event.location}
+              mode={event.mode as 'weekly' | 'specific'}
+              config={event.config}
               timezone={event.timezone}
-              key={event.id}
             />
           )}
 
@@ -225,7 +226,7 @@ const ViewEvent = () => {
             />
           )}
           <div //button container for positioning "Save" and "Cancel" buttons
-            className="flex flex-row justify-center"
+            className="flex flex-row justify-center gap-4"
           >
             {isNewUser && !isSignedIn && !isButtonsVisible ? (
               <div>
