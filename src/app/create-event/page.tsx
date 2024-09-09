@@ -163,9 +163,11 @@ export default function CreateEvent() {
         <section //Left side container (Event form)
           className="h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
         >
-          {userName && isAvailable && (
-            <Username username={userName} setUsername={setUserName} />
-          )}
+          <div className="mb-6">
+            {userName != null && isAvailable && (
+              <Username username={userName} setUsername={setUserName} />
+            )}
+          </div>
           <EventForm
             title={title}
             setTitle={setTitle}

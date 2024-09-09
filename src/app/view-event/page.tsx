@@ -35,6 +35,7 @@ const ViewEvent = () => {
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
   const [isNewUser, setIsNewUser] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -82,14 +83,18 @@ const ViewEvent = () => {
   }
 
   useEffect(() => {
+    const promises: Promise<any>[] = []
     if (localStorage.getItem('username')) {
-      getUser(localStorage.getItem('username') as UUID).then((data) => {
-        if (data) {
-          setUserName(data[0].name)
-        }
-      })
+      const promise = getUser(localStorage.getItem('username') as UUID).then(
+        (data) => {
+          if (data) {
+            setUserName(data[0].name)
+          }
+          promises.push(promise)
+        },
+      )
     }
-    getEvent(eventId as UUID)
+    const promise = getEvent(eventId as UUID)
       .then(async (data) => {
         const newEvent: Event = {
           id: eventId as UUID,
@@ -130,6 +135,7 @@ const ViewEvent = () => {
           )
           setRecentlyViewedEvents(newRecentlyViewedEvents)
         }
+        promises.push(promise)
       })
       .catch((error) => {
         setError('No event found')
@@ -166,6 +172,9 @@ const ViewEvent = () => {
         setError('Failed to load attendees')
       })
     setIsAvailable(false)
+    Promise.all(promises).then(() => {
+      setIsLoading(false)
+    })
   }, [eventId, userAvailability])
 
   const openModal = () => {
@@ -186,9 +195,11 @@ const ViewEvent = () => {
         <section //Left side container (Event form)
           className="h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
         >
-          {userName && isSignedIn && (
-            <Username username={userName} setUsername={setUserName} />
-          )}
+          <div className="mb-6">
+            {userName != null && isSignedIn && (
+              <Username username={userName} setUsername={setUserName} />
+            )}
+          </div>
           {event && (
             <EventCard // Event Card to display Event Details
               eventId={event.id}

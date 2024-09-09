@@ -109,7 +109,7 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
-            <div className="mb-4 flex items-center justify-start">
+            <div className="mb-10 flex items-center justify-start">
               <h1 className="mr-6 text-2xl font-black font-extrabold">
                 My Events
               </h1>
@@ -117,7 +117,7 @@ export default function Index() {
                 <button className="btn btn-primary">Create Event</button>
               </Link>
               <div className="ml-4"></div> {/* spacing */}
-              {username && !isLoading && (
+              {username != null && !isLoading && (
                 <Username username={username} setUsername={setUsername} />
               )}
             </div>
