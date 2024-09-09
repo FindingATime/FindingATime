@@ -8,6 +8,7 @@ import {
 } from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { userAgent } from 'next/server'
+import { time } from 'console'
 
 interface GridProps {
   earliestTime: string
@@ -232,8 +233,54 @@ const Grid = ({
     setGrid(newGrid)
   }
 
+  // Function to generate grid gradient based on the number of responders
+  const generateGridGradient = (
+    isSelected: number,
+    totalResponders: number,
+  ): string => {
+    if (totalResponders === 0) return '' // No responders, no color
+
+    // Define shades
+    const shades = [100, 200, 300, 400, 500, 600]
+
+    // Calculate fraction and map to shade index
+    const fraction = isSelected / totalResponders
+    const index = Math.min(
+      Math.floor(fraction * (shades.length - 1)),
+      shades.length - 1,
+    )
+    const shade = shades[index]
+    return `bg-emerald-${shade}`
+  }
+
   return (
     <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeaveGrid}>
+      {/* Column Header for weekdays corresponding to specific dates */}
+      <div>
+        {mode === 'specific' && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`,
+              marginLeft: '62px',
+            }}
+          >
+            {config?.map((dateString: string, index: number) => (
+              <div
+                key={index}
+                className="flex flex-col items-center justify-center border-gray-300 text-xs text-gray-400"
+              >
+                <div>
+                  {new Date(dateString).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div
         className="grid-container"
         style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}
@@ -274,7 +321,7 @@ const Grid = ({
               dates?.map((day, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-center border-gray-300 text-sm text-gray-600"
+                  className="flex items-start justify-center border-gray-300 text-[15px] text-gray-600"
                   style={{ height: '2rem' }}
                 >
                   {day}
@@ -307,22 +354,26 @@ const Grid = ({
               row.map((isSelected, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
-                    isSelected
-                      ? isSelected === (responders?.length || 0)
-                        ? 'bg-emerald-600'
-                        : 'bg-emerald-300'
-                      : ''
-                  } ${
-                    // Change cursor to pointer if grid is selectable
-                    isAvailable ? 'cursor-pointer' : 'cursor-default'
-                  } ${
-                    // Add border-dashed to cell if it is the hovered cell
-                    hoveredCell?.rowIndex === rowIndex &&
-                    hoveredCell?.colIndex === colIndex
-                      ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
-                      : ''
-                  }`}
+                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
+                    ${isSelected ? 'bg-emerald-300' : ''}
+                    ${
+                      isSelected && responders
+                        ? generateGridGradient(
+                            isSelected,
+                            responders?.length || 0,
+                          )
+                        : ''
+                    }
+                    ${
+                      // Change cursor to pointer if grid is selectable
+                      isAvailable ? 'cursor-pointer' : 'cursor-default'
+                    } ${
+                      // Add border-dashed to cell if it is the hovered cell
+                      hoveredCell?.rowIndex === rowIndex &&
+                      hoveredCell?.colIndex === colIndex
+                        ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
+                        : ''
+                    }`}
                   onMouseDown={
                     (dates?.length as number) > 0
                       ? () => handleMouseDown(rowIndex, colIndex)

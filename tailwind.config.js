@@ -28,4 +28,12 @@ export default {
       },
     ],
   },
+  safelist: [
+    'bg-emerald-100',
+    'bg-emerald-200',
+    'bg-emerald-300',
+    'bg-emerald-400',
+    'bg-emerald-500',
+    'bg-emerald-600',
+  ],
 }
