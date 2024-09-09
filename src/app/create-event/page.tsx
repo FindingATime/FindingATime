@@ -28,12 +28,14 @@ export default function CreateEvent() {
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check if user is signed in
+    const promises = []
     if (localStorage.getItem('username')) {
       setUserName(localStorage.getItem('username') as string)
-      getUser(localStorage.getItem('username') as UUID)
+      const promise = getUser(localStorage.getItem('username') as UUID)
         .then((data) => {
           if (data) {
             setUserName(data[0].name)
@@ -42,7 +44,11 @@ export default function CreateEvent() {
         .catch((error) => {
           console.error('Error:', error.message)
         })
+      promises.push(promise)
     }
+    Promise.all(promises).then(() => {
+      setLoading(false)
+    })
   }, [])
 
   //added router to redirect to view-event page after creating event
@@ -140,7 +146,7 @@ export default function CreateEvent() {
 
   // Function to open modal for after clicking "Sign In"
   const openModal = () => {
-    if (dialogRef.current && userName === '') {
+    if (dialogRef.current && !userName) {
       dialogRef.current.showModal()
     } else {
       setIsAvailable(true)

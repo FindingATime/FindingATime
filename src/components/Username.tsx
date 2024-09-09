@@ -21,11 +21,11 @@ export default function Username({ username, setUsername }: UsernameProps) {
   return (
     <>
       <div className="flex items-center">
-        <h1 className="text-l pb-4 pt-4">Username: </h1>
+        <h1 className="text-l pb-2 pt-2">Username: </h1>
         {isEditingUsername ? (
           <div className="flex items-center">
             <input
-              className="text-l input input-sm mr-2 border-gray-300 font-normal focus-visible:ring-0"
+              className="text-l input input-sm mx-2 border-gray-300 font-normal focus-visible:ring-0"
               type="text"
               value={username ? username : ''}
               size={20}
@@ -54,7 +54,7 @@ export default function Username({ username, setUsername }: UsernameProps) {
           </div>
         ) : (
           <div className="flex">
-            <h1 className="text-l ml-4 mr-2">{username}</h1>
+            <h1 className="text-l mx-2">{username}</h1>
             <button>
               <svg
                 xmlns="http://www.w3.org/2000/svg"

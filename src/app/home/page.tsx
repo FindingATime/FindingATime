@@ -41,6 +41,7 @@ export default function Index() {
           data.forEach((event: Event) => {
             eventIdSet.add(event.id)
           })
+          promises.push(getEventPromise)
         })
         .catch((error) => {
           console.error('Error:', error.message)
@@ -49,9 +50,8 @@ export default function Index() {
         localStorage.getItem('username') as UUID,
       ).then((data) => {
         setUsername(data[0].name)
+        promises.push(getUserPromise)
       })
-      promises.push(getEventPromise)
-      promises.push(getUserPromise)
     } else {
       setIsLoading(false)
     }
@@ -109,7 +109,6 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
-            <Username username={username} setUsername={setUsername} />
             <div className="mb-4 flex items-center justify-start">
               <h1 className="mr-6 text-2xl font-black font-extrabold">
                 My Events
@@ -117,6 +116,10 @@ export default function Index() {
               <Link href="/create-event">
                 <button className="btn btn-primary">Create Event</button>
               </Link>
+              <div className="ml-4"></div> {/* spacing */}
+              {username && !isLoading && (
+                <Username username={username} setUsername={setUsername} />
+              )}
             </div>
             {!isLoading &&
               (myEvents.length === 0 ? (
