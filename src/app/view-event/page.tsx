@@ -24,23 +24,10 @@ export async function generateMetadata({
     const data = await res.json()
 
     if (data && data.length > 0) {
-      const event: Event = {
-        id: eventId as UUID,
-        viewTime: new Date(),
+      // data[0] will contain the event data
+      return {
         title: data[0].title,
         description: data[0].description,
-        starttime: data[0].starttime,
-        endtime: data[0].endtime,
-        timezone: data[0].timezone,
-        location: data[0].location,
-        config: data[0].config || {},
-        mode: data[0].mode || 'weekly', // Modify to include both weekly & specific dates if needed
-      }
-
-      // Return the metadata based on the event data
-      return {
-        title: event.title,
-        description: event.description,
       }
     } else {
       return {
