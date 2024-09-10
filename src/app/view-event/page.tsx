@@ -1,6 +1,4 @@
-import ViewEventWrapper from './ViewEvent'
-import { UUID } from 'crypto'
-import { Event, getEvent } from '@/utils/eventsUtils'
+import ViewEventWrapper from '@/components/ViewEvent'
 
 export async function generateMetadata({
   searchParams,
