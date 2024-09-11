@@ -54,6 +54,33 @@ export async function getUser(userId: UUID) {
     })
 }
 
+export async function editUser(userId: UUID, name: string) {
+  return fetch(`/api/users/edit?userId=${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id: userId,
+      name: name,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((err) => {
+          throw new Error(err.message)
+        })
+      }
+      return response.json()
+    })
+    .then((data) => {
+      return data
+    })
+    .catch((error) => {
+      console.error('Error:', error.message)
+    })
+}
+
 export async function addUserCreateEvent(
   username: string,
   title: string,
