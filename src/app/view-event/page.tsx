@@ -19,7 +19,7 @@ export async function generateMetadata({
 
   try {
     const res = await fetch(
-      `${process.env.HOST_URL}/api/events?eventId=${eventId}`,
+      `http://${process.env.HOST_URL}/api/events?eventId=${eventId}`,
     )
     const data = await res.json()
 
