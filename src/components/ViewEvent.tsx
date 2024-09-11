@@ -102,7 +102,7 @@ const ViewEvent = () => {
           timezone: data[0].timezone,
           location: data[0].location,
           config: data[0].config || {},
-          mode: data[0].mode || 'weekly', // TODO: need to modify to include both weekly & specific dates
+          mode: data[0].mode,
         }
 
         setEvent(newEvent)

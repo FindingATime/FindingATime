@@ -1,5 +1,7 @@
 import ViewEventWrapper from '@/components/ViewEvent'
 
+export const runtime = 'edge'
+
 export async function generateMetadata({
   searchParams,
 }: {
