@@ -10,6 +10,7 @@ import EventForm from '@/components/EventForm'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import Header from '@/components/Header'
+import Username from '@/components/Username'
 
 export default function CreateEvent() {
   const [title, setTitle] = useState<string | null>('')
@@ -23,16 +24,18 @@ export default function CreateEvent() {
   const [schedule, setSchedule] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
-  const [userName, setUserName] = useState('') // set to name entered at sign in
+  const [userName, setUserName] = useState<string | null>(null) // set to name entered at sign in
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check if user is signed in
+    const promises = []
     if (localStorage.getItem('username')) {
       setUserName(localStorage.getItem('username') as string)
-      getUser(localStorage.getItem('username') as UUID)
+      const promise = getUser(localStorage.getItem('username') as UUID)
         .then((data) => {
           if (data) {
             setUserName(data[0].name)
@@ -41,7 +44,11 @@ export default function CreateEvent() {
         .catch((error) => {
           console.error('Error:', error.message)
         })
+      promises.push(promise)
     }
+    Promise.all(promises).then(() => {
+      setLoading(false)
+    })
   }, [])
 
   //added router to redirect to view-event page after creating event
@@ -104,7 +111,7 @@ export default function CreateEvent() {
 
     try {
       await addUserCreateEvent(
-        userName,
+        userName ? userName : 'Guest',
         title as string,
         description,
         earliestTime,
@@ -139,7 +146,7 @@ export default function CreateEvent() {
 
   // Function to open modal for after clicking "Sign In"
   const openModal = () => {
-    if (dialogRef.current && userName === '') {
+    if (dialogRef.current && !userName) {
       dialogRef.current.showModal()
     } else {
       setIsAvailable(true)
@@ -154,8 +161,13 @@ export default function CreateEvent() {
         className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
       >
         <section //Left side container (Event form)
-          className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
+          className="h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
         >
+          <div className="mb-6">
+            {userName != null && isAvailable && (
+              <Username username={userName} setUsername={setUserName} />
+            )}
+          </div>
           <EventForm
             title={title}
             setTitle={setTitle}
@@ -195,7 +207,7 @@ export default function CreateEvent() {
                   type="text"
                   placeholder="Enter Your Name"
                   className="input input-bordered w-full max-w-xs py-4"
-                  value={userName}
+                  value={userName ? userName : ''}
                   onChange={(e) => {
                     setUserName(e.target.value)
                   }}
