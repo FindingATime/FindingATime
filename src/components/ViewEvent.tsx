@@ -35,6 +35,7 @@ const ViewEvent = () => {
   const [isNewUser, setIsNewUser] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [newSchedule, setNewSchedule] = useState<Schedule>({})
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -175,7 +176,7 @@ const ViewEvent = () => {
     Promise.all(promises).then(() => {
       setIsLoading(false)
     })
-  }, [eventId])
+  }, [eventId, newSchedule])
 
   const openModal = () => {
     if (dialogRef.current) {
@@ -266,6 +267,19 @@ const ViewEvent = () => {
                       onClick={() => {
                         setIsAvailable(true)
                         setIsButtonsVisible(true) // Show buttons when user signs in
+                        const user = responders.find(
+                          (responder) =>
+                            responder.attendee ===
+                            (localStorage.getItem('username') as UUID),
+                        )
+                        const userSchedule = user?.timesegments
+                        if (userSchedule != null) {
+                          console.log('schedule found', userSchedule)
+                          setSchedule(userSchedule)
+                        } else {
+                          console.log('no schedule found')
+                          setSchedule({})
+                        }
                       }}
                     >
                       Edit Availability
@@ -336,6 +350,7 @@ const ViewEvent = () => {
                             setIsNewUser(false)
                             setUserName('') // Reset username when user saves
                             setSchedule(schedule)
+                            setNewSchedule(schedule)
                             getAttendees(eventId as UUID).then((data) => {
                               if (data) {
                                 //format attendee data
@@ -357,6 +372,7 @@ const ViewEvent = () => {
                           setIsNewUser(false)
                           setUserName('') // Reset username when user saves
                           setSchedule(schedule)
+                          setNewSchedule(schedule)
                           console.log('schedule after edit', schedule)
                           getAttendees(eventId as UUID).then((data) => {
                             if (data) {

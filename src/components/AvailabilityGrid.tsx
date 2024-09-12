@@ -147,8 +147,12 @@ const Grid = ({
         )
         const userSchedule = user?.timesegments
         console.log('userSchedule', userSchedule)
+        // causing a bug where schedule is somehow null, but schedule does need to be set here to work
+        if (userSchedule) {
+          setSchedule(userSchedule)
+        }
         setCurrentUserAvailability(userSchedule as Schedule)
-        // loop through userSchedule like above and setup grid
+        // loop through userSchedule like above and setup grid while editing schedule
         const newGrid = initialGrid()
         config?.forEach((day, colIndex) => {
           const times =
@@ -163,13 +167,12 @@ const Grid = ({
 
             // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
             for (let i = startIndex; i < endIndex; i++) {
-              newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
+              newGrid[i][colIndex] = true
             }
 
             // edge case where start and end times are the same so endIndex is 0 and startIndex is timeArray.length - 2
             if (endIndex === 0) {
-              newGrid[startIndex][colIndex] =
-                (newGrid[startIndex][colIndex] || 0) + 1
+              newGrid[startIndex][colIndex] = true
             }
           })
         })
@@ -237,7 +240,8 @@ const Grid = ({
   // Function toggles the value of a cell
   const toggleCell = (rowIndex: number, colIndex: number) => {
     const newGrid = [...grid]
-    console.log('newGrid', newGrid)
+    console.log('newGrid in toggleCell', newGrid)
+    console.log('schedule in toggleCell', schedule)
     newGrid[rowIndex][colIndex] = !newGrid[rowIndex][colIndex]
     const selectedTimeSegment = {
       beginning: timeArray[rowIndex],
