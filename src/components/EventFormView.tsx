@@ -7,7 +7,7 @@ interface EventFormViewProps {
   description: string
   location: string
   mode: 'weekly' | 'specific'
-  config: { [key: string]: boolean } | string[]
+  config: { [key: string]: boolean } | { days: string[] }
   timezone: string
 }
 
@@ -20,34 +20,56 @@ const EventFormView = ({
   timezone,
 }: EventFormViewProps) => {
   const formatDays = () => {
-    // Helper function to format dates in the format 'MMM DD'
+    // Helper function to format a date in 'MMM DD'
     const formatDate = (dateString: string) =>
       new Date(dateString).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
       })
 
-    // Helper function to format weekdays
+    // Helper function to format the weekday
     const formatWeekday = (dateString: string) =>
       new Date(dateString).toLocaleDateString('en-US', { weekday: 'short' })
 
     // Checks if the mode is weekly and the config is an object
     if (mode === 'weekly' && !Array.isArray(config)) {
-      return Object.keys(config)
-        .filter((day) => config[day])
-        .map((day) => day.slice(0, 3))
-        .join(', ')
+      const days = Object.keys(config).filter(
+        (day) => (config as { [key: string]: boolean })[day],
+      )
+      return (
+        <span className="flex flex-row flex-wrap items-start text-sm">
+          {days.map((day, index) => (
+            <span key={day} className="pr-1 font-medium text-gray-700">
+              {day.slice(0, 3)}
+              {index < days.length - 1 && (
+                <span className="px-2 font-bold text-gray-400">•</span>
+              )}
+            </span>
+          ))}
+        </span>
+      )
     }
 
-    // Checks if the mode is specific, has 'days' property, and the config is an array
+    // Checks if the mode is specific and the config is an array of days
     if (mode === 'specific' && 'days' in config && Array.isArray(config.days)) {
-      const dates = config.days.map(formatDate).join(', ')
-      const weekdays = config.days.map(formatWeekday).join(', ')
       return (
-        <>
-          <div>{dates}</div>
-          <div className="text-gray-500">{weekdays}</div>
-        </>
+        <div className="flex flex-wrap">
+          {config.days.map((dateString, index) => (
+            <div key={dateString} className="flex flex-row items-start text-sm">
+              <span className="pr-1 font-medium text-gray-700">
+                {formatWeekday(dateString)}
+              </span>
+              <span className="font-normal text-gray-700">
+                {formatDate(dateString)}
+              </span>
+              <span className="px-2 font-bold text-gray-400">
+                {Array.isArray(config.days) &&
+                  index < config.days.length - 1 &&
+                  '•'}
+              </span>
+            </div>
+          ))}
+        </div>
       )
     }
     return ''
