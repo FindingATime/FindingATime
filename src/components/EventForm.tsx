@@ -188,7 +188,7 @@ const EventForm = ({
                   let newSpecificDays: string[] = config ? config : []
                   if (
                     !newSpecificDays?.some((day) => {
-                      isSameDate(day, monthDateYear)
+                      return isSameDate(day, monthDateYear)
                     }) &&
                     (newSpecificDays?.length as number) < maxDaysSelectable
                   ) {
