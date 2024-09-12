@@ -235,7 +235,7 @@ const Grid = ({
 
   // Function to generate grid gradient based on the number of responders
   const generateGridGradient = (
-    isSelected: number,
+    numRespondersAvailable: number,
     totalResponders: number,
   ): string => {
     if (totalResponders === 0) return '' // No responders, no color
@@ -244,11 +244,8 @@ const Grid = ({
     const shades = [100, 200, 300, 400, 500, 600]
 
     // Calculate fraction and map to shade index
-    const fraction = isSelected / totalResponders
-    const index = Math.min(
-      Math.floor(fraction * (shades.length - 1)),
-      shades.length - 1,
-    )
+    const fraction = numRespondersAvailable / totalResponders
+    const index = Math.floor(fraction * (shades.length - 1))
     const shade = shades[index]
     return `bg-emerald-${shade}`
   }
@@ -351,15 +348,19 @@ const Grid = ({
             onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
             {grid.map((row, rowIndex) =>
-              row.map((isSelected, colIndex) => (
+              row.map((numRespondersAvailable, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
                   className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
-                    ${isSelected ? 'bg-emerald-300' : ''}
                     ${
-                      isSelected && responders
+                      numRespondersAvailable && isAvailable
+                        ? 'bg-emerald-300'
+                        : ''
+                    }
+                    ${
+                      numRespondersAvailable && responders
                         ? generateGridGradient(
-                            isSelected,
+                            numRespondersAvailable,
                             responders?.length || 0,
                           )
                         : ''
