@@ -35,6 +35,8 @@ const Grid = ({
   config,
   schedule,
   setSchedule,
+  userAvailability,
+  setUserAvailability,
   onCellHover,
 }: GridProps) => {
   // Generate time array for row headings
@@ -78,7 +80,7 @@ const Grid = ({
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig as string[])
-      setSchedule({}) // if user chooses new dates, clear the schedule
+      !userAvailability && setSchedule({}) // if user chooses new dates, clear the schedule
     } else {
       // Sort dates in ascending order
       let newConfig: string[] = config as string[]
@@ -93,7 +95,7 @@ const Grid = ({
         )
       })
       setDates(newConfig)
-      setSchedule({}) // if user chooses new dates, clear the schedule
+      !userAvailability && setSchedule({}) // if user chooses new dates, clear the schedule
     }
 
     // Only populate grid if in view mode and responder's time segments is not empty
@@ -130,7 +132,7 @@ const Grid = ({
       setGrid(newGrid)
     } else {
       // initialize grid when dimensions change when filling in event form (create-event)
-      setGrid(initialGrid())
+      !userAvailability ? setGrid(initialGrid()) : setGrid(grid)
     }
   }, [
     isAvailable,
@@ -139,6 +141,7 @@ const Grid = ({
     earliestTime,
     latestTime,
     responders,
+    userAvailability,
   ])
 
   // Function is called when the mouse is pressed down on a cell
@@ -197,6 +200,22 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
+    const timeSlot = `${rowIndex}-${colIndex}` // Define the time slot key
+
+    // Update userAvailability state
+    setUserAvailability &&
+      setUserAvailability((prevAvailability) => {
+        const newAvailability = { ...prevAvailability }
+        if (newGrid[rowIndex][colIndex]) {
+          // Add the time slot to userAvailability
+          newAvailability[timeSlot] = [selectedTimeSegment]
+        } else {
+          // Remove the time slot from userAvailability
+          delete newAvailability[timeSlot]
+        }
+        return newAvailability
+      })
+
     if (
       config &&
       (convertDateStringToDateObject(config[colIndex]).toString() !==
@@ -289,9 +308,7 @@ const Grid = ({
 
           {/* Main Grid body cells for selecting and deselecting */}
           <div
-            className={`grid h-full border border-gray-300 ${
-              isAvailable ? 'bg-red-50' : ''
-            }`}
+            className={`grid h-full border border-gray-300`}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
@@ -302,37 +319,44 @@ const Grid = ({
             onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
             {grid.map((row, rowIndex) =>
-              row.map((isSelected, colIndex) => (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
-                    isSelected
-                      ? isSelected === (responders?.length || 0)
-                        ? 'bg-emerald-600'
-                        : 'bg-emerald-300'
-                      : ''
-                  } ${
-                    // Change cursor to pointer if grid is selectable
-                    isAvailable ? 'cursor-pointer' : 'cursor-default'
-                  } ${
-                    // Add border-dashed to cell if it is the hovered cell
-                    hoveredCell?.rowIndex === rowIndex &&
-                    hoveredCell?.colIndex === colIndex
-                      ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
-                      : ''
-                  }`}
-                  onMouseDown={
-                    (dates?.length as number) > 0
-                      ? () => handleMouseDown(rowIndex, colIndex)
-                      : undefined
-                  }
-                  onMouseEnter={
-                    (dates?.length as number) > 0
-                      ? () => handleMouseEnter(rowIndex, colIndex)
-                      : undefined
-                  }
-                ></div>
-              )),
+              row.map((isSelected, colIndex) => {
+                console.log('userAvailability', userAvailability)
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
+                      isAvailable
+                        ? isSelected
+                          ? 'bg-emerald-300'
+                          : 'bg-red-50'
+                        : isSelected
+                          ? isSelected === (responders?.length || 0)
+                            ? 'bg-emerald-600'
+                            : 'bg-emerald-300'
+                          : ''
+                    } ${
+                      // Change cursor to pointer if grid is selectable
+                      isAvailable ? 'cursor-pointer' : 'cursor-default'
+                    } ${
+                      // Add border-dashed to cell if it is the hovered cell
+                      hoveredCell?.rowIndex === rowIndex &&
+                      hoveredCell?.colIndex === colIndex
+                        ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
+                        : ''
+                    }`}
+                    onMouseDown={
+                      (dates?.length as number) > 0
+                        ? () => handleMouseDown(rowIndex, colIndex)
+                        : undefined
+                    }
+                    onMouseEnter={
+                      (dates?.length as number) > 0
+                        ? () => handleMouseEnter(rowIndex, colIndex)
+                        : undefined
+                    }
+                  ></div>
+                )
+              }),
             )}
           </div>
         </div>
