@@ -29,7 +29,6 @@ const ViewEvent = () => {
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
-  const [userAvailability, setUserAvailability] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
@@ -235,8 +234,6 @@ const ViewEvent = () => {
                 config={convertConfigToArray(event.config)}
                 schedule={schedule}
                 setSchedule={setSchedule}
-                userAvailability={userAvailability}
-                setUserAvailability={setUserAvailability}
                 onCellHover={handleCellHover}
               />
             )}
@@ -269,19 +266,6 @@ const ViewEvent = () => {
                       onClick={() => {
                         setIsAvailable(true)
                         setIsButtonsVisible(true) // Show buttons when user signs in
-                        // find responder's schedule
-                        const user = responders.find(
-                          (responder) =>
-                            responder.attendee ===
-                            (localStorage.getItem('username') as UUID),
-                        )
-                        const userSchedule = user?.timesegments
-                        console.log('userSchedule before edit', userSchedule)
-                        if (userSchedule) {
-                          setUserAvailability(userSchedule)
-                        } else {
-                          setUserAvailability({})
-                        }
                       }}
                     >
                       Edit Availability
@@ -352,7 +336,6 @@ const ViewEvent = () => {
                             setIsNewUser(false)
                             setUserName('') // Reset username when user saves
                             setSchedule(schedule)
-                            setUserAvailability(schedule)
                             getAttendees(eventId as UUID).then((data) => {
                               if (data) {
                                 //format attendee data
@@ -374,7 +357,6 @@ const ViewEvent = () => {
                           setIsNewUser(false)
                           setUserName('') // Reset username when user saves
                           setSchedule(schedule)
-                          setUserAvailability(schedule)
                           console.log('schedule after edit', schedule)
                           getAttendees(eventId as UUID).then((data) => {
                             if (data) {
