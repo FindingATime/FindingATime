@@ -146,8 +146,6 @@ const Grid = ({
             responder.attendee === (localStorage.getItem('username') as UUID),
         )
         const userSchedule = user?.timesegments
-        console.log('userSchedule', userSchedule)
-        // causing a bug where schedule is somehow null, but schedule does need to be set here to work
         if (userSchedule) {
           setSchedule(userSchedule)
         }
@@ -240,8 +238,6 @@ const Grid = ({
   // Function toggles the value of a cell
   const toggleCell = (rowIndex: number, colIndex: number) => {
     const newGrid = [...grid]
-    console.log('newGrid in toggleCell', newGrid)
-    console.log('schedule in toggleCell', schedule)
     newGrid[rowIndex][colIndex] = !newGrid[rowIndex][colIndex]
     const selectedTimeSegment = {
       beginning: timeArray[rowIndex],

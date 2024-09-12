@@ -274,10 +274,8 @@ const ViewEvent = () => {
                         )
                         const userSchedule = user?.timesegments
                         if (userSchedule != null) {
-                          console.log('schedule found', userSchedule)
                           setSchedule(userSchedule)
                         } else {
-                          console.log('no schedule found')
                           setSchedule({})
                         }
                       }}
@@ -373,7 +371,6 @@ const ViewEvent = () => {
                           setUserName('') // Reset username when user saves
                           setSchedule(schedule)
                           setNewSchedule(schedule)
-                          console.log('schedule after edit', schedule)
                           getAttendees(eventId as UUID).then((data) => {
                             if (data) {
                               //format attendee data
