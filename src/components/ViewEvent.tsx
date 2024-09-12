@@ -6,7 +6,6 @@ import {
   getAttendees,
   editAttendee,
 } from '@/utils/attendeesUtils'
-import Head from 'next/head'
 
 import { Suspense, useEffect, useState, useRef, lazy } from 'react'
 import { redirect, useSearchParams } from 'next/navigation'
@@ -190,14 +189,6 @@ const ViewEvent = () => {
 
   return (
     <>
-      <Head>
-        <title>{event ? event.title : 'Loading...'}</title>
-        <meta
-          property="og:description"
-          content={event ? event.description : 'Loading event details...'}
-          key="description"
-        />
-      </Head>
       <div className="w-full">
         <Header />
         <div //main screen
