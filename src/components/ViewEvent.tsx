@@ -20,7 +20,7 @@ import EventView from '@/components/EventView'
 import EventCard from '@/components/EventCard'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
-import { create } from 'domain'
+import Username from '@/components/Username'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -29,13 +29,14 @@ const ViewEvent = () => {
   const [error, setError] = useState<string | null>(null)
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
-  const [userName, setUserName] = useState<string>('') // set to name entered when adding availability
+  const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
   const [userAvailability, setUserAvailability] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
   const [isNewUser, setIsNewUser] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -83,14 +84,18 @@ const ViewEvent = () => {
   }
 
   useEffect(() => {
+    const promises: Promise<any>[] = []
     if (localStorage.getItem('username')) {
-      getUser(localStorage.getItem('username') as UUID).then((data) => {
-        if (data) {
-          setUserName(data[0].name)
-        }
-      })
+      const promise = getUser(localStorage.getItem('username') as UUID).then(
+        (data) => {
+          if (data) {
+            setUserName(data[0].name)
+          }
+          promises.push(promise)
+        },
+      )
     }
-    getEvent(eventId as UUID)
+    const promise = getEvent(eventId as UUID)
       .then(async (data) => {
         const newEvent: Event = {
           id: eventId as UUID,
@@ -132,6 +137,7 @@ const ViewEvent = () => {
           )
           setRecentlyViewedEvents(newRecentlyViewedEvents)
         }
+        promises.push(promise)
       })
       .catch((error) => {
         setError('No event found')
@@ -168,6 +174,9 @@ const ViewEvent = () => {
         setError('Failed to load attendees')
       })
     setIsAvailable(false)
+    Promise.all(promises).then(() => {
+      setIsLoading(false)
+    })
   }, [eventId, userAvailability])
 
   const openModal = () => {
@@ -195,8 +204,13 @@ const ViewEvent = () => {
           className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
         >
           <section //Left side container (Event form)
-            className="h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
+            className="h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
           >
+            <div className="mb-6">
+              {userName != null && isSignedIn && (
+                <Username username={userName} setUsername={setUserName} />
+              )}
+            </div>
             {event && (
               <EventCard // Event Card to display Event Details
                 eventId={event.id}
@@ -278,7 +292,7 @@ const ViewEvent = () => {
                     type="text"
                     placeholder="Enter Your Name"
                     className="input input-bordered w-full max-w-xs bg-white py-4"
-                    value={userName}
+                    value={userName ? userName : ''}
                     onChange={(e) => {
                       setUserName(e.target.value)
                     }}
@@ -321,7 +335,7 @@ const ViewEvent = () => {
                   <button
                     className="btn btn-primary rounded-full px-4 py-2 text-white"
                     onClick={() => {
-                      if (isNewUser) {
+                      if (isNewUser && userName) {
                         createUser(userName).then((data) => {
                           addAttendee(
                             eventId as UUID,
