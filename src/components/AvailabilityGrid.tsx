@@ -9,12 +9,6 @@ import {
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { userAgent } from 'next/server'
 import { time } from 'console'
-import {
-  addAttendee,
-  TimeSegment,
-  Schedule,
-  getAttendees,
-} from '@/utils/attendeesUtils'
 import { UUID } from 'crypto'
 
 interface GridProps {
