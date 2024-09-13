@@ -42,7 +42,7 @@ export const isSameDate = (date1: string, date2: string) => {
   const month = months[new Date(date1).getUTCMonth()]
   const dateDay = new Date(date1).getUTCDate()
   const year = new Date(date1).getUTCFullYear()
-  return month + ' ' + dateDay + ' ' + year === date2
+  return month + ' ' + dateDay + ' ' + year !== date2
 }
 
 // if date is in the format 'Month Day Year', return the date in the format of the toString of a date object

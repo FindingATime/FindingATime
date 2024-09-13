@@ -16,7 +16,7 @@ import { days, months } from '@/utils/dateUtils'
 
 import Header from '@/components/Header'
 import EventView from '@/components/EventView'
-import EventCard from '@/components/EventCard'
+import EventFormView from '@/components/EventFormView'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import Username from '@/components/Username'
@@ -203,14 +203,13 @@ const ViewEvent = () => {
               )}
             </div>
             {event && (
-              <EventCard // Event Card to display Event Details
-                eventId={event.id}
+              <EventFormView // EventFormView to display Event Details
                 title={event.title}
-                starttime={event.starttime}
-                endtime={event.endtime}
+                description={event.description}
                 location={event.location}
+                mode={event.mode as 'weekly' | 'specific'}
+                config={event.config}
                 timezone={event.timezone}
-                key={event.id}
               />
             )}
 
@@ -241,7 +240,7 @@ const ViewEvent = () => {
               />
             )}
             <div //button container for positioning "Save" and "Cancel" buttons
-              className="flex flex-row justify-center"
+              className="flex flex-row justify-center gap-4"
             >
               {isNewUser && !isSignedIn && !isButtonsVisible ? (
                 <div>

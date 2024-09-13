@@ -29,6 +29,8 @@ export const generateTimeRange = (
     generateTimeRange.push(times[i % times.length])
   }
 
+  console.log(generateTimeRange)
+
   return generateTimeRange
 }
 

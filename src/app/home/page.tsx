@@ -6,14 +6,12 @@ import SignUpUserSteps from '@/components/SignUpUserSteps'
 import Header from '@/components/Header'
 import { createServerClient, createBrowserClient } from '@/utils/supabase'
 import EventCard from '@/components/EventCard'
-import Username from '@/components/Username'
 import ThemeToggle from '@/components/ThemeToggle'
 import { Suspense, useEffect, useState } from 'react'
 import { UUID } from 'crypto'
 import Link from 'next/link'
 import { Event, getMyEvents } from '@/utils/eventsUtils'
 import { getNumRespondents } from '@/utils/attendeesUtils'
-import { getUser, editUser } from '@/utils/userUtils'
 
 export default function Index() {
   const [myEvents, setMyEvents] = useState<Event[]>([])
@@ -25,33 +23,20 @@ export default function Index() {
   }>({})
   const [isLoading, setIsLoading] = useState(true)
   const [eventIds, setEventIds] = useState<Set<UUID>>(new Set())
-  const [username, setUsername] = useState<string | null>(null)
-  const [isEditingUsername, setIsEditingUsername] = useState(false)
-  const [usernameTooLongError, setUsernameTooLongError] = useState(false)
 
   useEffect(() => {
     const eventIdSet = new Set<UUID>()
-    const promises = []
     if (localStorage.getItem('username')) {
-      const getEventPromise = getMyEvents(
-        localStorage.getItem('username') as UUID,
-      )
+      getMyEvents(localStorage.getItem('username') as UUID)
         .then((data) => {
           setMyEvents(data)
           data.forEach((event: Event) => {
             eventIdSet.add(event.id)
           })
-          promises.push(getEventPromise)
         })
         .catch((error) => {
           console.error('Error:', error.message)
         })
-      const getUserPromise = getUser(
-        localStorage.getItem('username') as UUID,
-      ).then((data) => {
-        setUsername(data[0].name)
-        promises.push(getUserPromise)
-      })
     } else {
       setIsLoading(false)
     }
@@ -74,6 +59,7 @@ export default function Index() {
     // get number of respondents for each event 10 at a time to avoid hitting the API limit
     // if there is less than 10, then get the remaining
     const eventIdsArray = Array.from(eventIdSet)
+    const promises = []
     let newObj: { [key: string]: number } = {}
     for (let i = 0; i < eventIdsArray.length; i += 10) {
       // slice through 10 events at a time, unless there is less than 10 then just get remaining
@@ -109,17 +95,11 @@ export default function Index() {
       <div className="container mx-auto p-4">
         <div className="flex">
           <div className="w-3/4 p-4">
-            <div className="mb-10 flex items-center justify-start">
-              <h1 className="mr-6 text-2xl font-black font-extrabold">
-                My Events
-              </h1>
+            <div className="mb-4 flex items-center justify-start">
+              <h1 className="text-2xl font-black font-extrabold">My Events</h1>
               <Link href="/create-event">
-                <button className="btn btn-primary">Create Event</button>
+                <button className="btn btn-primary ml-6">Create Event</button>
               </Link>
-              <div className="ml-4"></div> {/* spacing */}
-              {username != null && !isLoading && (
-                <Username username={username} setUsername={setUsername} />
-              )}
             </div>
             {!isLoading &&
               (myEvents.length === 0 ? (
