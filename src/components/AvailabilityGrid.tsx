@@ -6,6 +6,9 @@ import {
   convertDateStringToDateObject,
   formattedDate,
 } from '@/utils/dateUtils'
+import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
+import { userAgent } from 'next/server'
+import { time } from 'console'
 import {
   addAttendee,
   TimeSegment,
@@ -120,15 +123,17 @@ const Grid = ({
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 
-            // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
-            for (let i = startIndex; i < endIndex; i++) {
-              newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
+            // Handle case where end time is not found in the timeArray (endIndex being -1)
+            if (endIndex === -1) {
+              endIndex = timeArray.length // Set to the end of the timeArray
             }
 
-            // edge case where start and end times are the same so endIndex is 0 and startIndex is timeArray.length - 2
-            if (endIndex === 0) {
-              newGrid[startIndex][colIndex] =
-                (newGrid[startIndex][colIndex] || 0) + 1
+            // Check if the start and end index are valid
+            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+              for (let i = startIndex; i < endIndex; i++) {
+                // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
+                newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
+              }
             }
           })
         })
@@ -278,8 +283,51 @@ const Grid = ({
     setGrid(newGrid)
   }
 
+  // Function to generate grid gradient based on the number of responders
+  const generateGridGradient = (
+    numRespondersAvailable: number,
+    totalResponders: number,
+  ): string => {
+    if (totalResponders === 0) return '' // No responders, no color
+
+    // Define shades
+    const shades = [100, 200, 300, 400, 500, 600]
+
+    // Calculate fraction and map to shade index
+    const fraction = numRespondersAvailable / totalResponders
+    const index = Math.floor(fraction * (shades.length - 1))
+    const shade = shades[index]
+    return `bg-emerald-${shade}`
+  }
+
   return (
     <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeaveGrid}>
+      {/* Column Header for weekdays corresponding to specific dates */}
+      <div>
+        {mode === 'specific' && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`,
+              marginLeft: '62px',
+            }}
+          >
+            {config?.map((dateString: string, index: number) => (
+              <div
+                key={index}
+                className="flex flex-col items-center justify-center border-gray-300 text-xs text-gray-400"
+              >
+                <div>
+                  {new Date(dateString).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div
         className="grid-container"
         style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}
@@ -320,7 +368,7 @@ const Grid = ({
               dates?.map((day, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-center border-gray-300 text-sm text-gray-600"
+                  className="flex items-start justify-center border-gray-300 text-[15px] text-gray-600"
                   style={{ height: '2rem' }}
                 >
                   {day}
@@ -348,19 +396,24 @@ const Grid = ({
             onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
           >
             {grid.map((row, rowIndex) =>
-              row.map((isSelected, colIndex) => {
-                return (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 ${
-                      isSelected
-                        ? isSelected === (responders?.length || 0)
-                          ? 'bg-emerald-600'
-                          : 'bg-emerald-300'
-                        : isAvailable
-                          ? 'bg-red-50'
-                          : ''
-                    } ${
+              row.map((numRespondersAvailable, colIndex) => (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
+                    ${
+                      numRespondersAvailable && isAvailable
+                        ? 'bg-emerald-300'
+                        : ''
+                    }
+                    ${
+                      numRespondersAvailable && responders
+                        ? generateGridGradient(
+                            numRespondersAvailable,
+                            responders?.length || 0,
+                          )
+                        : ''
+                    }
+                    ${
                       // Change cursor to pointer if grid is selectable
                       isAvailable ? 'cursor-pointer' : 'cursor-default'
                     } ${
@@ -370,19 +423,18 @@ const Grid = ({
                         ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
                         : ''
                     }`}
-                    onMouseDown={
-                      (dates?.length as number) > 0
-                        ? () => handleMouseDown(rowIndex, colIndex)
-                        : undefined
-                    }
-                    onMouseEnter={
-                      (dates?.length as number) > 0
-                        ? () => handleMouseEnter(rowIndex, colIndex)
-                        : undefined
-                    }
-                  ></div>
-                )
-              }),
+                  onMouseDown={
+                    (dates?.length as number) > 0
+                      ? () => handleMouseDown(rowIndex, colIndex)
+                      : undefined
+                  }
+                  onMouseEnter={
+                    (dates?.length as number) > 0
+                      ? () => handleMouseEnter(rowIndex, colIndex)
+                      : undefined
+                  }
+                ></div>
+              )),
             )}
           </div>
         </div>
