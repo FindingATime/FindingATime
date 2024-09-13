@@ -39,7 +39,10 @@ const EventFormView = ({
       return (
         <span className="flex flex-row flex-wrap items-start text-sm">
           {days.map((day, index) => (
-            <span key={day} className="pr-1 font-medium text-gray-700">
+            <span
+              key={`${day}-${index}`}
+              className="pr-1 font-medium text-gray-700"
+            >
               {day.slice(0, 3)}
               {index < days.length - 1 && (
                 <span className="px-2 font-bold text-gray-400">•</span>
