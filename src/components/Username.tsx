@@ -26,7 +26,7 @@ export default function Username({ username, setUsername }: UsernameProps) {
           {isEditingUsername ? (
             <div className="flex items-center">
               <input
-                id='usernameInput'
+                id="usernameInput"
                 className="text-l input input-sm mx-2 border-gray-300 font-normal focus-visible:ring-0"
                 type="text"
                 value={username ? username : ''}
