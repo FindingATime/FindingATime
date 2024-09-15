@@ -26,6 +26,7 @@ export default function Username({ username, setUsername }: UsernameProps) {
           {isEditingUsername ? (
             <div className="flex items-center">
               <input
+                id="usernameInput"
                 className="text-l input input-sm mx-2 border-gray-300 font-normal focus-visible:ring-0"
                 type="text"
                 value={username ? username : ''}
@@ -65,6 +66,7 @@ export default function Username({ username, setUsername }: UsernameProps) {
               <h1 className="text-l mx-2">{username}</h1>
               <button>
                 <svg
+                  id="editUsernameBtn"
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
                   fill="none"
