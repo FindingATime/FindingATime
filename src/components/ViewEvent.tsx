@@ -389,7 +389,7 @@ const ViewEvent = () => {
           </section>
 
           <section //Right side container (Responses)
-            className="w-full py-8 md:w-[13%]"
+            className="sticky top-0 h-1 w-full py-8 md:w-[13%]"
           >
             <Responses responders={responders} hoveredCell={hoveredCell} />
           </section>

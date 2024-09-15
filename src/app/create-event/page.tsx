@@ -257,12 +257,6 @@ export default function CreateEvent() {
             </div>
           )}
         </section>
-
-        <section //Right side container (Responses)
-          className="w-full py-8 md:w-[13%]"
-        >
-          <Responses responders={[]} />
-        </section>
       </div>
     </div>
   )
