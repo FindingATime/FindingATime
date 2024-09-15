@@ -195,7 +195,7 @@ const ViewEvent = () => {
           className="flex min-h-screen w-full flex-col gap-8 p-8 md:flex-row"
         >
           <section //Left side container (Event form)
-            className="h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
+            className="sticky top-0 h-full w-full rounded-lg px-6 py-16 shadow-lg md:w-[30%]"
           >
             <div className="mb-6">
               {userName != null && isSignedIn && (
