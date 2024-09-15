@@ -7,8 +7,7 @@ import {
   formattedDate,
 } from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
-import { userAgent } from 'next/server'
-import { time } from 'console'
+import { UUID } from 'crypto'
 
 interface GridProps {
   earliestTime: string
@@ -17,13 +16,12 @@ interface GridProps {
   responders?: {
     users: { name: string }
     timesegments: Schedule
+    attendee: UUID // Add the 'attendee' property to the type
   }[]
   mode: string
   config: string[] | null
   schedule: Schedule
   setSchedule: React.Dispatch<React.SetStateAction<Schedule>>
-  userAvailability?: Schedule
-  setUserAvailability?: React.Dispatch<React.SetStateAction<Schedule>>
   onCellHover?: (day: string, time: string) => void // Callback function when hovering over a cell
 }
 
@@ -58,6 +56,8 @@ const Grid = ({
   const [grid, setGrid] = useState(initialGrid)
   const [isSelecting, setIsSelecting] = useState(false) // When user is selecting cells
   const [dates, setDates] = useState<string[] | null>([])
+  const [currentUserAvailability, setCurrentUserAvailability] =
+    useState<Schedule | null>(null)
   const [hoveredCell, setHoveredCell] = useState<{
     // hovered cell on grid used for styling
     rowIndex: number
@@ -115,17 +115,15 @@ const Grid = ({
             const startIndex = timeArray.indexOf(timeSlot.beginning)
             let endIndex = timeArray.indexOf(timeSlot.end)
 
-            // Handle case where end time is not found in the timeArray (endIndex being -1)
-            if (endIndex === -1) {
-              endIndex = timeArray.length // Set to the end of the timeArray
+            // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
+            for (let i = startIndex; i < endIndex; i++) {
+              newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
             }
 
-            // Check if the start and end index are valid
-            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
-              for (let i = startIndex; i < endIndex; i++) {
-                // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
-                newGrid[i][colIndex] = (newGrid[i][colIndex] || 0) + 1
-              }
+            // edge case where start and end times are the same so endIndex is 0 and startIndex is timeArray.length - 2
+            if (endIndex === 0) {
+              newGrid[startIndex][colIndex] =
+                (newGrid[startIndex][colIndex] || 0) + 1
             }
           })
         })
@@ -133,7 +131,48 @@ const Grid = ({
       setGrid(newGrid)
     } else {
       // initialize grid when dimensions change when filling in event form (create-event)
-      setGrid(initialGrid())
+      // get the current user's availability
+      // check if eventid is in the url
+      const url = new URL(window.location.href)
+      const eventId = url.searchParams.get('eventId') as UUID
+      if (eventId && responders) {
+        const user = responders.find(
+          (responder) =>
+            responder.attendee === (localStorage.getItem('username') as UUID),
+        )
+        const userSchedule = user?.timesegments
+        if (userSchedule) {
+          setSchedule(userSchedule)
+        }
+        setCurrentUserAvailability(userSchedule as Schedule)
+        // loop through userSchedule like above and setup grid while editing schedule
+        const newGrid = initialGrid()
+        config?.forEach((day, colIndex) => {
+          const times =
+            userSchedule?.[
+              mode === 'weekly'
+                ? day
+                : convertDateStringToDateObject(day).toString()
+            ] || []
+          times.forEach((timeSlot) => {
+            const startIndex = timeArray.indexOf(timeSlot.beginning)
+            let endIndex = timeArray.indexOf(timeSlot.end)
+
+            // Instead of just setting to true, increment a counter to keep track of how many people are available at that time
+            for (let i = startIndex; i < endIndex; i++) {
+              newGrid[i][colIndex] = true
+            }
+
+            // edge case where start and end times are the same so endIndex is 0 and startIndex is timeArray.length - 2
+            if (endIndex === 0) {
+              newGrid[startIndex][colIndex] = true
+            }
+          })
+        })
+        setGrid(newGrid)
+      } else {
+        setGrid(initialGrid())
+      }
     }
   }, [
     isAvailable,
@@ -200,6 +239,7 @@ const Grid = ({
       end: timeArray[rowIndex + 1],
       type: 'Regular',
     }
+
     if (
       config &&
       (convertDateStringToDateObject(config[colIndex]).toString() !==
@@ -335,9 +375,7 @@ const Grid = ({
 
           {/* Main Grid body cells for selecting and deselecting */}
           <div
-            className={`grid h-full border border-gray-300 ${
-              isAvailable ? 'bg-red-50' : ''
-            }`}
+            className={`grid h-full border border-gray-300`}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
@@ -355,7 +393,9 @@ const Grid = ({
                     ${
                       numRespondersAvailable && isAvailable
                         ? 'bg-emerald-300'
-                        : ''
+                        : isAvailable
+                          ? 'bg-red-50'
+                          : '' // Red while editing schedule
                     }
                     ${
                       numRespondersAvailable && responders

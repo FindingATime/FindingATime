@@ -29,13 +29,13 @@ const ViewEvent = () => {
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
-  const [userAvailability, setUserAvailability] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
   const [isNewUser, setIsNewUser] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [newSchedule, setNewSchedule] = useState<Schedule>({})
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -176,7 +176,7 @@ const ViewEvent = () => {
     Promise.all(promises).then(() => {
       setIsLoading(false)
     })
-  }, [eventId, userAvailability])
+  }, [eventId, newSchedule])
 
   const openModal = () => {
     if (dialogRef.current) {
@@ -234,8 +234,6 @@ const ViewEvent = () => {
                 config={convertConfigToArray(event.config)}
                 schedule={schedule}
                 setSchedule={setSchedule}
-                userAvailability={userAvailability}
-                setUserAvailability={setUserAvailability}
                 onCellHover={handleCellHover}
               />
             )}
@@ -268,6 +266,17 @@ const ViewEvent = () => {
                       onClick={() => {
                         setIsAvailable(true)
                         setIsButtonsVisible(true) // Show buttons when user signs in
+                        const user = responders.find(
+                          (responder) =>
+                            responder.attendee ===
+                            (localStorage.getItem('username') as UUID),
+                        )
+                        const userSchedule = user?.timesegments
+                        if (userSchedule != null) {
+                          setSchedule(userSchedule)
+                        } else {
+                          setSchedule({})
+                        }
                       }}
                     >
                       Edit Availability
@@ -338,7 +347,7 @@ const ViewEvent = () => {
                             setIsNewUser(false)
                             setUserName('') // Reset username when user saves
                             setSchedule(schedule)
-                            setUserAvailability(schedule)
+                            setNewSchedule(schedule)
                             getAttendees(eventId as UUID).then((data) => {
                               if (data) {
                                 //format attendee data
@@ -360,7 +369,7 @@ const ViewEvent = () => {
                           setIsNewUser(false)
                           setUserName('') // Reset username when user saves
                           setSchedule(schedule)
-                          setUserAvailability(schedule)
+                          setNewSchedule(schedule)
                           getAttendees(eventId as UUID).then((data) => {
                             if (data) {
                               //format attendee data
