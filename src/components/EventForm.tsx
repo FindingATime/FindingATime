@@ -78,6 +78,7 @@ const EventForm = ({
       >
         <input //Event Title text input
           type="text"
+          id="titleInput"
           value={title as string}
           placeholder="New Event Title"
           onChange={(e) => setTitle(e.target.value)}
