@@ -1,5 +1,5 @@
 'use client'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getUser, editUser } from '@/utils/userUtils'
 import { UUID } from 'crypto'
 

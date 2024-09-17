@@ -45,6 +45,9 @@ const EventForm = ({
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
+  const [titleLengthError, setTitleLengthError] = useState(false)
+  const [locationLengthError, setLocationLengthError] = useState(false)
+  const [descriptionLengthError, setDescriptionLengthError] = useState(false)
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -80,34 +83,72 @@ const EventForm = ({
           type="text"
           value={title as string}
           placeholder="New Event Title"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            if (e.target.value.length === 0 || e.target.value.length > 120) {
+              setTitleLengthError(true)
+            } else {
+              setTitleLengthError(false)
+            }
+          }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
-            title !== null && 'mb-6'
+            title !== null && !titleLengthError && 'mb-6'
           }`}
         />
         {title === null && (
           <p className="mb-3 p-0 text-error">Title is required</p>
+        )}
+        {titleLengthError && title !== null && (
+          <p className="mb-3 p-0 text-error">
+            Title must be between 1 and 120 characters long.
+          </p>
         )}
 
         <textarea //Event Description text input
           rows={3}
           value={description}
           placeholder="Event Description (optional)"
-          onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered mb-6 w-full border-gray-300 text-base font-normal focus-visible:ring-0"
+          onChange={(e) => {
+            setDescription(e.target.value)
+            if (e.target.value.length > 500) {
+              setDescriptionLengthError(true)
+            } else {
+              setDescriptionLengthError(false)
+            }
+          }}
+          className={`textarea textarea-bordered w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
+            !descriptionLengthError && 'mb-6'
+          }`}
         ></textarea>
+        {descriptionLengthError && (
+          <p className="mb-3 p-0 text-error">
+            Description must be less than 500 characters.
+          </p>
+        )}
 
         <input //Event Location text input
           type="text"
           value={location as string}
           placeholder="Location"
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => {
+            setLocation(e.target.value)
+            if (e.target.value.length === 0 || e.target.value.length > 120) {
+              setLocationLengthError(true)
+            } else {
+              setLocationLengthError(false)
+            }
+          }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
-            location !== null && 'mb-6'
+            location !== null && !locationLengthError && 'mb-6'
           }`}
         />
         {location === null && (
           <p className="mb-3 p-0 text-error">Location is required</p>
+        )}
+        {locationLengthError && location !== null && (
+          <p className="mb-3 p-0 text-error">
+            Location must be between 1 and 120 characters long.
+          </p>
         )}
 
         <div //Event EarliestTime to LatestTime row container
