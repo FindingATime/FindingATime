@@ -81,7 +81,7 @@ const EventForm = ({
       >
         <input //Event Title text input
           type="text"
-          value={title as string}
+          value={title ? title : ''}
           placeholder="New Event Title"
           onChange={(e) => {
             setTitle(e.target.value)
@@ -92,15 +92,12 @@ const EventForm = ({
             }
           }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
-            title !== null && !titleLengthError && 'mb-6'
+            !titleLengthError && title !== null && 'mb-6'
           }`}
         />
-        {title === null && (
-          <p className="mb-3 p-0 text-error">Title is required</p>
-        )}
-        {titleLengthError && title !== null && (
+        {(titleLengthError || title === null) && (
           <p className="mb-3 p-0 text-error">
-            Title must be between 1 and 120 characters long.
+            Title must be between 1 and 120 characters.
           </p>
         )}
 
@@ -128,7 +125,7 @@ const EventForm = ({
 
         <input //Event Location text input
           type="text"
-          value={location as string}
+          value={location ? location : ''}
           placeholder="Location"
           onChange={(e) => {
             setLocation(e.target.value)
@@ -139,15 +136,12 @@ const EventForm = ({
             }
           }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
-            location !== null && !locationLengthError && 'mb-6'
+            !locationLengthError && location !== null && 'mb-6'
           }`}
         />
-        {location === null && (
-          <p className="mb-3 p-0 text-error">Location is required</p>
-        )}
-        {locationLengthError && location !== null && (
+        {(locationLengthError || location === null) && (
           <p className="mb-3 p-0 text-error">
-            Location must be between 1 and 120 characters long.
+            Location must be between 1 and 120 characters.
           </p>
         )}
 

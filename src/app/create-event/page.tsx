@@ -79,17 +79,26 @@ export default function CreateEvent() {
       Sat: false,
       Sun: false,
     }
-    if (title?.length === 0) {
-      setTitle(null)
-    }
-    if (location?.length === 0) {
-      setLocation(null)
-    }
-    if (timezone?.length === 0) {
-      setTimezone(null)
-    }
+
+    let hasLengthError = false
     if (config?.length === 0) {
       setConfig(null)
+      hasLengthError = true
+    }
+
+    if (!title || title.length === 0 || title.length > 120) {
+      hasLengthError = true
+    }
+    if (!location || location.length === 0 || location.length > 120) {
+      hasLengthError = true
+    }
+    if (description.length > 500) {
+      setDescription('')
+      hasLengthError = true
+    }
+
+    if (hasLengthError) {
+      return
     }
 
     const configJSON: { [key: string]: string[] } = {
