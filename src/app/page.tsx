@@ -42,7 +42,11 @@ export default function LandingPage() {
           </a>
           <a
             className="link-hover link"
-            onClick={() => document.getElementById('privacy_modal').showModal()}
+            onClick={() =>
+              (
+                document.getElementById('privacy_modal') as HTMLDialogElement
+              )?.showModal?.()
+            }
           >
             Privacy Policy
           </a>
