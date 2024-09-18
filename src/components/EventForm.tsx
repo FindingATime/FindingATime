@@ -28,8 +28,8 @@ interface EventFormProps {
   setLatestTime: React.Dispatch<React.SetStateAction<string>>
   mode: string
   setMode: React.Dispatch<React.SetStateAction<string>>
-  config: string[] | null
-  setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
+  config: string[]
+  setConfig: React.Dispatch<React.SetStateAction<string[]>>
   timezone: string
   setTimezone: React.Dispatch<React.SetStateAction<string>>
   isAvailable: boolean
@@ -68,6 +68,7 @@ const EventForm = ({
   const [titleLengthError, setTitleLengthError] = useState(false)
   const [descriptionLengthError, setDescriptionLengthError] = useState(false)
   const [locationLengthError, setLocationLengthError] = useState(false)
+  const [configLengthError, setConfigLengthError] = useState(false)
   const [timeZoneError, setTimeZoneError] = useState(false)
 
   const maxDaysAhead = 60
@@ -132,9 +133,9 @@ const EventForm = ({
       inputLengthError = true
       setLocationLengthError(true)
     }
-    if (config?.length === 0) {
+    if (config.length === 0) {
       inputLengthError = true
-      setConfig(null)
+      setConfigLengthError(true)
     }
 
     if (timezone === '') {
@@ -143,6 +144,7 @@ const EventForm = ({
     }
 
     if (inputLengthError) {
+      setIsButtonsVisible(true)
       return
     }
 
@@ -328,7 +330,7 @@ const EventForm = ({
             Specific Days
           </button>
         </div>
-        <div className={`${config !== null && 'mb-6'}`}>
+        <div className={`${!configLengthError && 'mb-6'}`}>
           {mode === 'specific' ? (
             <div>
               <Calendar // Specific days
@@ -420,7 +422,7 @@ const EventForm = ({
           ) : (
             <div //Days of the week
               className={`join flex w-full space-x-1.5 ${
-                config !== null && 'mb-6'
+                !configLengthError && 'mb-6'
               }`}
             >
               {days.map((day) => (
@@ -437,7 +439,7 @@ const EventForm = ({
             </div>
           )}
         </div>
-        {config === null && (
+        {configLengthError && (
           <p className="mb-3 p-0 text-error">At least one day required</p>
         )}
 

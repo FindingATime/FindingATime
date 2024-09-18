@@ -15,7 +15,7 @@ export default function CreateEvent() {
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
-  const [config, setConfig] = useState<string[] | null>([])
+  const [config, setConfig] = useState<string[]>([])
   const [timezone, setTimezone] = useState<string>('')
   const [schedule, setSchedule] = useState<Schedule>({})
 
