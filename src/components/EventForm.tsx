@@ -5,17 +5,19 @@ import { useState, useRef } from 'react'
 import Calendar from 'react-calendar'
 import Username from '@/components/Username'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
+import { addUserCreateEvent } from '@/utils/userUtils'
+import { addAttendee, Schedule } from '@/utils/attendeesUtils'
 import '@/app/calendarStyles.css'
 
 interface EventFormProps {
   username: string | null
   setUsername: React.Dispatch<React.SetStateAction<string | null>>
-  title: string | null
-  setTitle: React.Dispatch<React.SetStateAction<string | null>>
+  title: string
+  setTitle: React.Dispatch<React.SetStateAction<string>>
   description: string
   setDescription: React.Dispatch<React.SetStateAction<string>>
-  location: string | null
-  setLocation: React.Dispatch<React.SetStateAction<string | null>>
+  location: string
+  setLocation: React.Dispatch<React.SetStateAction<string>>
   earliestTime: string
   setEarliestTime: React.Dispatch<React.SetStateAction<string>>
   latestTime: string
@@ -28,7 +30,7 @@ interface EventFormProps {
   setTimezone: React.Dispatch<React.SetStateAction<string | null>>
   isAvailable: boolean
   setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>
-  handleSubmit: () => void
+  schedule: Schedule
 }
 
 const EventForm = ({
@@ -52,13 +54,15 @@ const EventForm = ({
   setTimezone,
   isAvailable,
   setIsAvailable,
-  handleSubmit,
+  schedule,
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [hasTitleBeenChanged, setHasTitleBeenChanged] = useState(false) // New state to control visibility of title error message
+  const [hasLocationBeenChanged, setHasLocationBeenChanged] = useState(false) // New state to control visibility of location error message
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -95,6 +99,86 @@ const EventForm = ({
     }
   }
 
+  const handleSubmit = async () => {
+    const daysOfWeekJSON: { [key: string]: boolean } = {
+      Mon: false,
+      Tue: false,
+      Wed: false,
+      Thu: false,
+      Fri: false,
+      Sat: false,
+      Sun: false,
+    }
+
+    let inputLengthError = false
+    if (title.length === 0 || title.length > 120) {
+      inputLengthError = true
+    }
+    if (description.length === 0 || description.length > 500) {
+      inputLengthError = true
+    }
+    if (location.length === 0 || location.length > 120) {
+      inputLengthError = true
+    }
+    if (config?.length === 0) {
+      inputLengthError = true
+      setConfig(null)
+    }
+
+    if (inputLengthError) {
+      return
+    }
+
+    const configJSON: { [key: string]: string[] } = {
+      days: [],
+    }
+
+    if (mode === 'weekly') {
+      config?.forEach((day) => {
+        if (daysOfWeekJSON.hasOwnProperty(day)) {
+          daysOfWeekJSON[day] = true
+        }
+      })
+    } else {
+      config?.forEach((day) => {
+        configJSON.days.push(day)
+      })
+    }
+
+    try {
+      await addUserCreateEvent(
+        username ? username : 'Guest',
+        title as string,
+        description,
+        earliestTime,
+        latestTime,
+        location as string,
+        timezone as string,
+        mode,
+        mode === 'weekly'
+          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
+          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
+      ).then((data) => {
+        // Add attendee to the event
+        addAttendee(
+          data[0].id,
+          localStorage.getItem('username') as UUID,
+          schedule,
+        )
+        // Redirects to the event view page using the eventId
+        router.push(`/view-event?eventId=${data[0].id}`)
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message)
+      } else {
+        console.error('Unexpected error:', error)
+      }
+    }
+    // handleSaveResponse() // Call handleSaveResponse to save the response
+    setIsAvailable(false) // Set availability to false when user creates event/saves their availability
+  }
+
   return (
     <>
       <div className="mb-6">
@@ -109,13 +193,20 @@ const EventForm = ({
           type="text"
           value={title as string}
           placeholder="New Event Title"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setHasTitleBeenChanged(true)
+            setTitle(e.target.value)
+          }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
-            title !== null && 'mb-6'
+            (!hasTitleBeenChanged ||
+              (title.length > 0 && title.length <= 120)) &&
+            'mb-6'
           }`}
         />
-        {title === null && (
-          <p className="mb-3 p-0 text-error">Title is required</p>
+        {hasTitleBeenChanged && (title.length === 0 || title.length > 120) && (
+          <p className="mb-3 p-0 text-error">
+            Title must be between 1 and 120 characters.
+          </p>
         )}
 
         <textarea //Event Description text input
@@ -123,21 +214,36 @@ const EventForm = ({
           value={description}
           placeholder="Event Description (optional)"
           onChange={(e) => setDescription(e.target.value)}
-          className="textarea textarea-bordered mb-6 w-full border-gray-300 text-base font-normal focus-visible:ring-0"
+          className={`textarea textarea-bordered w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
+            description.length <= 500 && 'mb-6'
+          }`}
         ></textarea>
+        {description.length > 500 && (
+          <p className="mb-3 p-0 text-error">
+            Description must be less than 500 characters.
+          </p>
+        )}
 
         <input //Event Location text input
           type="text"
           value={location as string}
           placeholder="Location"
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => {
+            setHasLocationBeenChanged(true)
+            setLocation(e.target.value)
+          }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
-            location !== null && 'mb-6'
+            (!hasLocationBeenChanged ||
+              (location.length > 0 && location.length <= 120)) &&
+            'mb-6'
           }`}
         />
-        {location === null && (
-          <p className="mb-3 p-0 text-error">Location is required</p>
-        )}
+        {hasLocationBeenChanged &&
+          (location.length === 0 || location.length > 120) && (
+            <p className="mb-3 p-0 text-error">
+              Location must be between 1 and 120 characters.
+            </p>
+          )}
 
         <div //Event EarliestTime to LatestTime row container
           className="flex w-full flex-row items-center justify-center gap-3"

@@ -10,9 +10,9 @@ import Grid from '@/components/AvailabilityGrid'
 import Header from '@/components/Header'
 
 export default function CreateEvent() {
-  const [title, setTitle] = useState<string | null>('')
-  const [description, setDescription] = useState('')
-  const [location, setLocation] = useState<string | null>('')
+  const [title, setTitle] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
+  const [location, setLocation] = useState<string>('')
   const [earliestTime, setEarliestTime] = useState('9:00 AM')
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
@@ -76,17 +76,24 @@ export default function CreateEvent() {
       Sat: false,
       Sun: false,
     }
-    if (title?.length === 0) {
-      setTitle(null)
+
+    let inputLengthError = false
+    if (title.length === 0 || title.length > 120) {
+      inputLengthError = true
     }
-    if (location?.length === 0) {
-      setLocation(null)
+    if (description.length === 0 || description.length > 500) {
+      inputLengthError = true
     }
-    if (timezone?.length === 0) {
-      setTimezone(null)
+    if (location.length === 0 || location.length > 120) {
+      inputLengthError = true
     }
     if (config?.length === 0) {
+      inputLengthError = true
       setConfig(null)
+    }
+
+    if (inputLengthError) {
+      return
     }
 
     const configJSON: { [key: string]: string[] } = {
@@ -169,7 +176,6 @@ export default function CreateEvent() {
             setTimezone={setTimezone}
             isAvailable={isAvailable}
             setIsAvailable={setIsAvailable}
-            handleSubmit={handleSubmit}
           />
         </section>
 
