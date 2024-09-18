@@ -1,9 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { UUID } from 'crypto'
-import { addUserCreateEvent, getUser } from '@/utils/userUtils'
-import { addAttendee, Schedule } from '@/utils/attendeesUtils'
-import { useRouter } from 'next/navigation'
+import { getUser } from '@/utils/userUtils'
+import { Schedule } from '@/utils/attendeesUtils'
 
 import EventForm from '@/components/EventForm'
 import Grid from '@/components/AvailabilityGrid'
@@ -47,9 +46,6 @@ export default function CreateEvent() {
     })
   }, [])
 
-  //added router to redirect to view-event page after creating event
-  const router = useRouter()
-
   // TODO: append local to remote api call for selecting all responder usernames
   /*
   const handleSaveResponse = () => {
@@ -64,80 +60,6 @@ export default function CreateEvent() {
     }
   }
   */
-
-  // Create Event Button function
-  const handleSubmit = async () => {
-    const daysOfWeekJSON: { [key: string]: boolean } = {
-      Mon: false,
-      Tue: false,
-      Wed: false,
-      Thu: false,
-      Fri: false,
-      Sat: false,
-      Sun: false,
-    }
-    if (title?.length === 0) {
-      setTitle(null)
-    }
-    if (location?.length === 0) {
-      setLocation(null)
-    }
-    if (timezone?.length === 0) {
-      setTimezone(null)
-    }
-    if (config?.length === 0) {
-      setConfig(null)
-    }
-
-    const configJSON: { [key: string]: string[] } = {
-      days: [],
-    }
-
-    if (mode === 'weekly') {
-      config?.forEach((day) => {
-        if (daysOfWeekJSON.hasOwnProperty(day)) {
-          daysOfWeekJSON[day] = true
-        }
-      })
-    } else {
-      config?.forEach((day) => {
-        configJSON.days.push(day)
-      })
-    }
-
-    try {
-      await addUserCreateEvent(
-        userName ? userName : 'Guest',
-        title as string,
-        description,
-        earliestTime,
-        latestTime,
-        location as string,
-        timezone as string,
-        mode,
-        mode === 'weekly'
-          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
-          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
-      ).then((data) => {
-        // Add attendee to the event
-        addAttendee(
-          data[0].id,
-          localStorage.getItem('username') as UUID,
-          schedule,
-        )
-        // Redirects to the event view page using the eventId
-        router.push(`/view-event?eventId=${data[0].id}`)
-      })
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error:', error.message)
-      } else {
-        console.error('Unexpected error:', error)
-      }
-    }
-    // handleSaveResponse() // Call handleSaveResponse to save the response
-    setIsAvailable(false) // Set availability to false when user creates event/saves their availability
-  }
 
   return (
     <div className="w-full">
@@ -169,7 +91,7 @@ export default function CreateEvent() {
             setTimezone={setTimezone}
             isAvailable={isAvailable}
             setIsAvailable={setIsAvailable}
-            handleSubmit={handleSubmit}
+            schedule={schedule}
           />
         </section>
 

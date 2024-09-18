@@ -1,11 +1,16 @@
 'use client'
 import React from 'react'
-import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
 import { useState, useRef } from 'react'
 import Calendar from 'react-calendar'
-import Username from '@/components/Username'
-import { times, sortedTimeZones } from '@/utils/timeUtils'
+import { useRouter } from 'next/navigation'
+import { UUID } from 'crypto'
 import '@/app/calendarStyles.css'
+
+import Username from '@/components/Username'
+import { days, months, isSameDate } from '@/utils/dateUtils'
+import { times, sortedTimeZones } from '@/utils/timeUtils'
+import { addUserCreateEvent } from '@/utils/userUtils'
+import { addAttendee, Schedule } from '@/utils/attendeesUtils'
 
 interface EventFormProps {
   username: string | null
@@ -28,7 +33,7 @@ interface EventFormProps {
   setTimezone: React.Dispatch<React.SetStateAction<string | null>>
   isAvailable: boolean
   setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>
-  handleSubmit: () => void
+  schedule: Schedule
 }
 
 const EventForm = ({
@@ -52,7 +57,7 @@ const EventForm = ({
   setTimezone,
   isAvailable,
   setIsAvailable,
-  handleSubmit,
+  schedule,
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
@@ -62,6 +67,9 @@ const EventForm = ({
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
+
+  //added router to redirect to view-event page after creating event
+  const router = useRouter()
 
   // Function to handle selected daysOfWeek array based on checkbox selection and deselection
   const handleSelectedDayOfWeek = (day: string) => {
@@ -93,6 +101,79 @@ const EventForm = ({
       setIsAvailable(true)
       setIsButtonsVisible(true)
     }
+  }
+
+  const handleSubmit = async () => {
+    const daysOfWeekJSON: { [key: string]: boolean } = {
+      Mon: false,
+      Tue: false,
+      Wed: false,
+      Thu: false,
+      Fri: false,
+      Sat: false,
+      Sun: false,
+    }
+    if (title?.length === 0) {
+      setTitle(null)
+    }
+    if (location?.length === 0) {
+      setLocation(null)
+    }
+    if (timezone?.length === 0) {
+      setTimezone(null)
+    }
+    if (config?.length === 0) {
+      setConfig(null)
+    }
+
+    const configJSON: { [key: string]: string[] } = {
+      days: [],
+    }
+
+    if (mode === 'weekly') {
+      config?.forEach((day) => {
+        if (daysOfWeekJSON.hasOwnProperty(day)) {
+          daysOfWeekJSON[day] = true
+        }
+      })
+    } else {
+      config?.forEach((day) => {
+        configJSON.days.push(day)
+      })
+    }
+
+    try {
+      await addUserCreateEvent(
+        username ? username : 'Guest',
+        title as string,
+        description,
+        earliestTime,
+        latestTime,
+        location as string,
+        timezone as string,
+        mode,
+        mode === 'weekly'
+          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
+          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
+      ).then((data) => {
+        // Add attendee to the event
+        addAttendee(
+          data[0].id,
+          localStorage.getItem('username') as UUID,
+          schedule,
+        )
+        // Redirects to the event view page using the eventId
+        router.push(`/view-event?eventId=${data[0].id}`)
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message)
+      } else {
+        console.error('Unexpected error:', error)
+      }
+    }
+    // handleSaveResponse() // Call handleSaveResponse to save the response
+    setIsAvailable(false) // Set availability to false when user creates event/saves their availability
   }
 
   return (
