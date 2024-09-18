@@ -1,13 +1,16 @@
 'use client'
 import React from 'react'
-import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
 import { useState, useRef } from 'react'
 import Calendar from 'react-calendar'
+import { useRouter } from 'next/navigation'
+import { UUID } from 'crypto'
+import '@/app/calendarStyles.css'
+
 import Username from '@/components/Username'
+import { days, months, isSameDate } from '@/utils/dateUtils'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
 import { addUserCreateEvent } from '@/utils/userUtils'
 import { addAttendee, Schedule } from '@/utils/attendeesUtils'
-import '@/app/calendarStyles.css'
 
 interface EventFormProps {
   username: string | null
@@ -66,6 +69,9 @@ const EventForm = ({
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
+
+  //added router to redirect to view-event page after creating event
+  const router = useRouter()
 
   // Function to handle selected daysOfWeek array based on checkbox selection and deselection
   const handleSelectedDayOfWeek = (day: string) => {
