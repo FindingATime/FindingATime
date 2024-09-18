@@ -153,13 +153,13 @@ const EventForm = ({
     }
 
     if (mode === 'weekly') {
-      config?.forEach((day) => {
+      config.forEach((day) => {
         if (daysOfWeekJSON.hasOwnProperty(day)) {
           daysOfWeekJSON[day] = true
         }
       })
     } else {
-      config?.forEach((day) => {
+      config.forEach((day) => {
         configJSON.days.push(day)
       })
     }
@@ -374,7 +374,7 @@ const EventForm = ({
                     })
                     setConfig(
                       (prevConfig) =>
-                        prevConfig?.filter((day) => {
+                        prevConfig.filter((day) => {
                           return !isSameDate(day, monthDateYear)
                         }) || [],
                     )
@@ -382,7 +382,7 @@ const EventForm = ({
 
                   if (
                     newSpecificDays.length >= maxDaysSelectable &&
-                    config?.length === maxDaysSelectable
+                    config.length === maxDaysSelectable
                   ) {
                     // Message for maximum selectable days limit
                     setPassSpecificDaysLimitMessage(
@@ -411,7 +411,7 @@ const EventForm = ({
                   ) {
                     return 'btn-active btn-error btn-gap'
                   }
-                  return view === 'month' && config?.includes(date.toString())
+                  return view === 'month' && config.includes(date.toString())
                     ? 'btn-active btn-success btn-gap'
                     : 'btn-primary available'
                 }}
@@ -432,7 +432,7 @@ const EventForm = ({
                   type="checkbox"
                   name="options"
                   aria-label={day}
-                  checked={config?.includes(day) || false}
+                  checked={config.includes(day) || false}
                   onChange={() => handleChange(day)}
                 />
               ))}
