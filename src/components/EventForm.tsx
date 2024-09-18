@@ -1,12 +1,15 @@
 'use client'
 import React from 'react'
 import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Calendar from 'react-calendar'
+import Username from '@/components/Username'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
 import '@/app/calendarStyles.css'
 
 interface EventFormProps {
+  username: string | null
+  setUsername: React.Dispatch<React.SetStateAction<string | null>>
   title: string | null
   setTitle: React.Dispatch<React.SetStateAction<string | null>>
   description: string
@@ -23,9 +26,14 @@ interface EventFormProps {
   setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
   timezone: string | null
   setTimezone: React.Dispatch<React.SetStateAction<string | null>>
+  isAvailable: boolean
+  setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>
+  handleSubmit: () => void
 }
 
 const EventForm = ({
+  username,
+  setUsername,
   title,
   setTitle,
   description,
@@ -42,9 +50,15 @@ const EventForm = ({
   setConfig,
   timezone,
   setTimezone,
+  isAvailable,
+  setIsAvailable,
+  handleSubmit,
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
+  const dialogRef = useRef<HTMLDialogElement>(null) // modal
+
+  const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -71,8 +85,23 @@ const EventForm = ({
     }
   }
 
+  // Function to open modal for after clicking "Sign In"
+  const openModal = () => {
+    if (dialogRef.current && !username) {
+      dialogRef.current.showModal()
+    } else {
+      setIsAvailable(true)
+      setIsButtonsVisible(true)
+    }
+  }
+
   return (
     <>
+      <div className="mb-6">
+        {username != null && isAvailable && (
+          <Username username={username} setUsername={setUsername} />
+        )}
+      </div>
       <form //Form to enter Event data (Title, Description...etc)
         className="flex w-full flex-col"
       >
@@ -297,6 +326,64 @@ const EventForm = ({
           <p className="mt-0 p-0 text-error">Timezone is required</p>
         )}
       </form>
+      <div //button container for positioning button
+        className="mx-4 flex justify-center pt-8"
+      >
+        {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
+          <button
+            className="btn btn-primary ml-4 rounded-full px-4 py-2"
+            onClick={openModal}
+          >
+            Add Availability
+          </button>
+        )}
+
+        {isButtonsVisible && ( // Conditionally render buttons section
+          <div //button container for positioning "Create Event" button
+            className="flex flex-row justify-center gap-4"
+          >
+            <button
+              className="btn btn-primary rounded-full px-4 py-2"
+              onClick={() => {
+                setIsButtonsVisible(false)
+                handleSubmit()
+              }}
+            >
+              Create Event
+            </button>
+          </div>
+        )}
+
+        <dialog ref={dialogRef} id="username_modal" className="modal">
+          <div className="modal-box focus:outline-white ">
+            <h3 className="py-4 text-lg font-bold">Sign In</h3>
+
+            <input
+              type="text"
+              placeholder="Enter Your Name"
+              className="input input-bordered w-full max-w-xs py-4"
+              value={username ? username : ''}
+              onChange={(e) => {
+                setUsername(e.target.value)
+              }}
+            />
+
+            <div className="modal-action">
+              <form method="dialog">
+                <button
+                  className="btn btn-primary ml-4 rounded-full px-4 py-2"
+                  onClick={() => {
+                    setIsAvailable(true) // Update isAvailable to true when name is entered
+                    setIsButtonsVisible(true) // Show buttons when user signs in
+                  }}
+                >
+                  Sign In
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
+      </div>
     </>
   )
 }
