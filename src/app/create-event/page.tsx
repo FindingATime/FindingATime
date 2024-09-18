@@ -16,11 +16,11 @@ export default function CreateEvent() {
   const [latestTime, setLatestTime] = useState('5:00 PM')
   const [mode, setMode] = useState('weekly')
   const [config, setConfig] = useState<string[] | null>([])
-  const [timezone, setTimezone] = useState<string | null>('')
+  const [timezone, setTimezone] = useState<string>('')
   const [schedule, setSchedule] = useState<Schedule>({})
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
-  const [userName, setUserName] = useState<string | null>(null) // set to name entered at sign in
+  const [userName, setUserName] = useState<string | null>('Guest') // set to name entered at sign in
 
   const [loading, setLoading] = useState(true)
 

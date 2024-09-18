@@ -11,6 +11,7 @@ import { days, months, isSameDate } from '@/utils/dateUtils'
 import { times, sortedTimeZones } from '@/utils/timeUtils'
 import { addUserCreateEvent } from '@/utils/userUtils'
 import { addAttendee, Schedule } from '@/utils/attendeesUtils'
+import { time } from 'console'
 
 interface EventFormProps {
   username: string | null
@@ -29,8 +30,8 @@ interface EventFormProps {
   setMode: React.Dispatch<React.SetStateAction<string>>
   config: string[] | null
   setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
-  timezone: string | null
-  setTimezone: React.Dispatch<React.SetStateAction<string | null>>
+  timezone: string
+  setTimezone: React.Dispatch<React.SetStateAction<string>>
   isAvailable: boolean
   setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>
   schedule: Schedule
@@ -64,8 +65,10 @@ const EventForm = ({
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
-  const [hasTitleBeenChanged, setHasTitleBeenChanged] = useState(false) // New state to control visibility of title error message
-  const [hasLocationBeenChanged, setHasLocationBeenChanged] = useState(false) // New state to control visibility of location error message
+  const [titleLengthError, setTitleLengthError] = useState(false)
+  const [descriptionLengthError, setDescriptionLengthError] = useState(false)
+  const [locationLengthError, setLocationLengthError] = useState(false)
+  const [timeZoneError, setTimeZoneError] = useState(false)
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -119,16 +122,24 @@ const EventForm = ({
     let inputLengthError = false
     if (title.length === 0 || title.length > 120) {
       inputLengthError = true
+      setTitleLengthError(true)
     }
-    if (description.length === 0 || description.length > 500) {
+    if (description.length > 500) {
       inputLengthError = true
+      setDescriptionLengthError(true)
     }
     if (location.length === 0 || location.length > 120) {
       inputLengthError = true
+      setLocationLengthError(true)
     }
     if (config?.length === 0) {
       inputLengthError = true
       setConfig(null)
+    }
+
+    if (timezone === '') {
+      inputLengthError = true
+      setTimeZoneError(true)
     }
 
     if (inputLengthError) {
@@ -154,12 +165,12 @@ const EventForm = ({
     try {
       await addUserCreateEvent(
         username ? username : 'Guest',
-        title as string,
+        title,
         description,
         earliestTime,
         latestTime,
-        location as string,
-        timezone as string,
+        location,
+        timezone,
         mode,
         mode === 'weekly'
           ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
@@ -197,19 +208,21 @@ const EventForm = ({
       >
         <input //Event Title text input
           type="text"
-          value={title as string}
+          value={title}
           placeholder="New Event Title"
           onChange={(e) => {
-            setHasTitleBeenChanged(true)
             setTitle(e.target.value)
+            if (e.target.value.length === 0 || e.target.value.length > 120) {
+              setTitleLengthError(true)
+            } else {
+              setTitleLengthError(false)
+            }
           }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
-            (!hasTitleBeenChanged ||
-              (title.length > 0 && title.length <= 120)) &&
-            'mb-6'
+            !titleLengthError && 'mb-6'
           }`}
         />
-        {hasTitleBeenChanged && (title.length === 0 || title.length > 120) && (
+        {titleLengthError && (
           <p className="mb-3 p-0 text-error">
             Title must be between 1 and 120 characters.
           </p>
@@ -219,12 +232,19 @@ const EventForm = ({
           rows={3}
           value={description}
           placeholder="Event Description (optional)"
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            setDescription(e.target.value)
+            if (e.target.value.length > 500) {
+              setDescriptionLengthError(true)
+            } else {
+              setDescriptionLengthError(false)
+            }
+          }}
           className={`textarea textarea-bordered w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
-            description.length <= 500 && 'mb-6'
+            !descriptionLengthError && 'mb-6'
           }`}
         ></textarea>
-        {description.length > 500 && (
+        {descriptionLengthError && (
           <p className="mb-3 p-0 text-error">
             Description must be less than 500 characters.
           </p>
@@ -232,24 +252,25 @@ const EventForm = ({
 
         <input //Event Location text input
           type="text"
-          value={location as string}
+          value={location}
           placeholder="Location"
           onChange={(e) => {
-            setHasLocationBeenChanged(true)
             setLocation(e.target.value)
+            if (e.target.value.length === 0 || e.target.value.length > 120) {
+              setLocationLengthError(true)
+            } else {
+              setLocationLengthError(false)
+            }
           }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
-            (!hasLocationBeenChanged ||
-              (location.length > 0 && location.length <= 120)) &&
-            'mb-6'
+            !locationLengthError && 'mb-6'
           }`}
         />
-        {hasLocationBeenChanged &&
-          (location.length === 0 || location.length > 120) && (
-            <p className="mb-3 p-0 text-error">
-              Location must be between 1 and 120 characters.
-            </p>
-          )}
+        {locationLengthError && (
+          <p className="mb-3 p-0 text-error">
+            Location must be between 1 and 120 characters.
+          </p>
+        )}
 
         <div //Event EarliestTime to LatestTime row container
           className="flex w-full flex-row items-center justify-center gap-3"
@@ -421,7 +442,7 @@ const EventForm = ({
         )}
 
         <select //Timezone dropdown
-          value={timezone as string}
+          value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
           className="select w-full border-gray-300 text-base font-normal"
         >
@@ -434,8 +455,8 @@ const EventForm = ({
             </option>
           ))}
         </select>
-        {timezone === null && (
-          <p className="mt-0 p-0 text-error">Timezone is required</p>
+        {timeZoneError && (
+          <p className="mt-0 p-0 text-error">Timezone is required.</p>
         )}
       </form>
       <div //button container for positioning button
