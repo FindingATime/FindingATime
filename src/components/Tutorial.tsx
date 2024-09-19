@@ -19,9 +19,15 @@ export default function Tutorial() {
           </Link>
           button
         </li>
-        <li>Fill in the event details</li>
-        <li>Add your availability.</li>
-        <li>Share the provided link with participants</li>
+        <li>
+          Fill in the event details like which specific days you want to choose
+          from or which days of the week for recurring events
+        </li>
+        <li>Add your availability for each day</li>
+        <li>
+          Share the provided link with participants so they can add their
+          availability
+        </li>
         <li>
           View and edit your events from the
           <Link href="/home">

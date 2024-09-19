@@ -12,6 +12,22 @@ export default function FAQ() {
       answer:
         'To invite participants, share the event link with them after creating a new event.',
     },
+    {
+      question:
+        'How do I find my created events or events I added my availability to?',
+      answer:
+        'Click on the "Dashboard" button in the top right corner of the screen to see a list of your created events.',
+    },
+    {
+      question: 'My availability has changed. How do I update it?',
+      answer:
+        'Visit your Event or find and visit the link on the Dashboard.  Click the "Edit Availability" button on the bottom right part of the page and update your availability.',
+    },
+    {
+      question: 'How do I know when the best time to meet is?',
+      answer:
+        'Visit your Event or find and visit the link on the Dashboard.  Look at the availability grid and see when the best time to meet is by hovering over the darkest green cells.  Hovering over a cell identifies which respondents, highlighted in green, are available in the Responders list on the right.',
+    },
   ]
 
   const [openIndex, setOpenIndex] = useState<number | null>(null)

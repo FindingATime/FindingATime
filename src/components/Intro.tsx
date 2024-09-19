@@ -57,8 +57,12 @@ export default function Intro() {
       <div className="container mx-auto flex items-center justify-between">
         <div className="mb-10">
           <p className="mt-4 text-lg">
-            Finding A Time is a simple tool that helps you schedule meetings
-            with your team, friends or clients.
+            We are the simplest, fastest and free way to schedule meetings with
+            your team, friends or clients.
+          </p>
+          <p className="mt-4 text-lg">
+            There is no login required or account signup. Just create a new
+            event and share the link to find out when everyone can meet.
           </p>
         </div>
       </div>
