@@ -16,7 +16,7 @@ export default function FAQ() {
       question:
         'How do I find my created events or events I added my availability to?',
       answer:
-        'Click on the "Dashboard" button in the top right corner of the screen to seee a list of your created events.',
+        'Click on the "Dashboard" button in the top right corner of the screen to see a list of your created events.',
     },
     {
       question: 'My availability has changed. How do I update it?',

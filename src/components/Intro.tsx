@@ -61,7 +61,7 @@ export default function Intro() {
             your team, friends or clients.
           </p>
           <p className="mt-4 text-lg">
-            Their is no login required or account signup. Just create a new
+            There is no login required or account signup. Just create a new
             event and share the link to find out when everyone can meet.
           </p>
         </div>
