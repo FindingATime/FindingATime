@@ -8,6 +8,8 @@ import {
 } from '@/utils/dateUtils'
 import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { UUID } from 'crypto'
+import ToggleButton from '@/components/ToggleButton'
+import { time } from 'console'
 
 interface GridProps {
   earliestTime: string
@@ -63,6 +65,7 @@ const Grid = ({
     rowIndex: number
     colIndex: number
   } | null>(null)
+  const [timeSegmentType, setTimeSegmentType] = useState('Regular')
 
   const addDateToSchedule = (date: string, timeSegments: TimeSegment[]) => {
     const newSchedule = { ...schedule }
@@ -237,7 +240,7 @@ const Grid = ({
     const selectedTimeSegment = {
       beginning: timeArray[rowIndex],
       end: timeArray[rowIndex + 1],
-      type: 'Regular',
+      type: timeSegmentType,
     }
 
     if (
@@ -291,146 +294,158 @@ const Grid = ({
   }
 
   return (
-    <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeaveGrid}>
-      {/* Column Header for weekdays corresponding to specific dates */}
-      <div>
-        {mode === 'specific' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`,
-              marginLeft: '62px',
-            }}
-          >
-            {config?.map((dateString: string, index: number) => (
-              <div
-                key={index}
-                className="flex flex-col items-center justify-center border-gray-300 text-xs text-gray-400"
-              >
-                <div>
-                  {new Date(dateString).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div
-        className="grid-container"
-        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}
-      >
-        {/* Time row headers */}
-        <div
-          className="grid-time-headers"
-          style={{
-            display: 'grid',
-            gridTemplateRows: `repeat(${dimensions.height}, 32px)`,
-            alignItems: 'flex-start',
-          }}
-        >
-          {timeArray.map(
-            (time, index) =>
-              index !== timeArray.length && (
+    <div className="flex flex-col">
+      <div onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeaveGrid}>
+        {/* Column Header for weekdays corresponding to specific dates */}
+        <div>
+          {mode === 'specific' && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`,
+                marginLeft: '62px',
+              }}
+            >
+              {config?.map((dateString: string, index: number) => (
                 <div
                   key={index}
-                  className="flex items-start justify-start border-gray-300 pr-2 text-xs text-gray-600"
-                  style={{ height: '64px', lineHeight: '64px' }}
+                  className="flex flex-col items-center justify-center border-gray-300 text-xs text-gray-400"
                 >
-                  {time}
+                  <div>
+                    {new Date(dateString).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                    })}
+                  </div>
                 </div>
-              ),
+              ))}
+            </div>
           )}
         </div>
 
-        <div>
-          {/* Grid Column header displaying days of the week */}
+        <div
+          className="grid-container"
+          style={{ display: 'grid', gridTemplateColumns: 'auto 1fr' }}
+        >
+          {/* Time row headers */}
           <div
-            className="grid-header"
+            className="grid-time-headers"
             style={{
               display: 'grid',
-              gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`, // Ensure at least one column
+              gridTemplateRows: `repeat(${dimensions.height}, 32px)`,
+              alignItems: 'flex-start',
             }}
           >
-            {(dates?.length as number) > 0 ? (
-              dates?.map((day, index) => (
-                <div
-                  key={index}
-                  className="flex items-start justify-center border-gray-300 text-[15px] text-gray-600"
-                  style={{ height: '2rem' }}
-                >
-                  {day}
-                </div>
-              ))
-            ) : (
-              // Placeholder for grid header (fixes alignment of times and grid rows when no dates are present)
-              <div
-                className="flex items-center justify-center border-gray-300 text-sm text-gray-600"
-                style={{ height: '2rem' }}
-              ></div>
+            {timeArray.map(
+              (time, index) =>
+                index !== timeArray.length && (
+                  <div
+                    key={index}
+                    className="flex items-start justify-start border-gray-300 pr-2 text-xs text-gray-600"
+                    style={{ height: '64px', lineHeight: '64px' }}
+                  >
+                    {time}
+                  </div>
+                ),
             )}
           </div>
 
-          {/* Main Grid body cells for selecting and deselecting */}
-          <div
-            className={`grid h-full border border-gray-300`}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
-              gridTemplateRows: `repeat(${dimensions.height}, 1fr)`,
-              width: '100%',
-              height: `${dimensions.height * 32 + 1}px`, // 32px height per row and add 1px to height to account for border
-            }}
-            onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
-          >
-            {grid.map((row, rowIndex) =>
-              row.map((numRespondersAvailable, colIndex) => (
+          <div>
+            {/* Grid Column header displaying days of the week */}
+            <div
+              className="grid-header"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${dimensions.width || 1}, 1fr)`, // Ensure at least one column
+              }}
+            >
+              {(dates?.length as number) > 0 ? (
+                dates?.map((day, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start justify-center border-gray-300 text-[15px] text-gray-600"
+                    style={{ height: '2rem' }}
+                  >
+                    {day}
+                  </div>
+                ))
+              ) : (
+                // Placeholder for grid header (fixes alignment of times and grid rows when no dates are present)
                 <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
-                    ${
-                      numRespondersAvailable && isAvailable
-                        ? 'bg-emerald-300'
-                        : isAvailable
-                          ? 'bg-red-50'
-                          : '' // Red while editing schedule
-                    }
-                    ${
-                      numRespondersAvailable && responders
-                        ? generateGridGradient(
-                            numRespondersAvailable,
-                            responders?.length || 0,
-                          )
-                        : ''
-                    }
-                    ${
-                      // Change cursor to pointer if grid is selectable
-                      isAvailable ? 'cursor-pointer' : 'cursor-default'
-                    } ${
-                      // Add border-dashed to cell if it is the hovered cell
-                      hoveredCell?.rowIndex === rowIndex &&
-                      hoveredCell?.colIndex === colIndex
-                        ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
-                        : ''
-                    }`}
-                  onMouseDown={
-                    (dates?.length as number) > 0
-                      ? () => handleMouseDown(rowIndex, colIndex)
-                      : undefined
-                  }
-                  onMouseEnter={
-                    (dates?.length as number) > 0
-                      ? () => handleMouseEnter(rowIndex, colIndex)
-                      : undefined
-                  }
+                  className="flex items-center justify-center border-gray-300 text-sm text-gray-600"
+                  style={{ height: '2rem' }}
                 ></div>
-              )),
-            )}
+              )}
+            </div>
+
+            {/* Main Grid body cells for selecting and deselecting */}
+            <div
+              className={`grid h-full border border-gray-300`}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${dimensions.width}, 1fr)`,
+                gridTemplateRows: `repeat(${dimensions.height}, 1fr)`,
+                width: '100%',
+                height: `${dimensions.height * 32 + 1}px`, // 32px height per row and add 1px to height to account for border
+              }}
+              onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
+            >
+              {grid.map((row, rowIndex) =>
+                row.map((numRespondersAvailable, colIndex) => (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
+                      ${
+                        numRespondersAvailable && isAvailable
+                          ? timeSegmentType === 'Regular'
+                            ? 'bg-emerald-300'
+                            : 'bg-sky-300'
+                          : isAvailable
+                            ? 'bg-red-50'
+                            : '' // Red while editing schedule
+                      }
+                      ${
+                        numRespondersAvailable && responders
+                          ? generateGridGradient(
+                              numRespondersAvailable,
+                              responders?.length || 0,
+                            )
+                          : ''
+                      }
+                      ${
+                        // Change cursor to pointer if grid is selectable
+                        isAvailable ? 'cursor-pointer' : 'cursor-default'
+                      } ${
+                        // Add border-dashed to cell if it is the hovered cell
+                        hoveredCell?.rowIndex === rowIndex &&
+                        hoveredCell?.colIndex === colIndex
+                          ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
+                          : ''
+                      }`}
+                    onMouseDown={
+                      (dates?.length as number) > 0
+                        ? () => handleMouseDown(rowIndex, colIndex)
+                        : undefined
+                    }
+                    onMouseEnter={
+                      (dates?.length as number) > 0
+                        ? () => handleMouseEnter(rowIndex, colIndex)
+                        : undefined
+                    }
+                  ></div>
+                )),
+              )}
+            </div>
           </div>
         </div>
       </div>
+      {isAvailable && (
+        <div className="flex justify-center">
+          <ToggleButton
+            timeSegmentType={timeSegmentType}
+            setTimeSegmentType={setTimeSegmentType}
+          />
+        </div>
+      )}
     </div>
   )
 }
