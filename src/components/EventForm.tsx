@@ -187,6 +187,7 @@ const EventForm = ({
         className="flex w-full flex-col"
       >
         <input //Event Title text input
+          id="titleInput"
           type="text"
           value={title as string}
           placeholder="New Event Title"
@@ -200,6 +201,7 @@ const EventForm = ({
         )}
 
         <textarea //Event Description text input
+          id="descriptionInput"
           rows={3}
           value={description}
           placeholder="Event Description (optional)"
@@ -208,6 +210,7 @@ const EventForm = ({
         ></textarea>
 
         <input //Event Location text input
+          id="locationInput"
           type="text"
           value={location as string}
           placeholder="Location"
@@ -224,6 +227,7 @@ const EventForm = ({
           className="flex w-full flex-row items-center justify-center gap-3"
         >
           <select //EarliestTime dropdown
+            id="earliestTimeDropdown"
             value={earliestTime}
             onChange={(e) => setEarliestTime(e.target.value)}
             className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
@@ -241,6 +245,7 @@ const EventForm = ({
             to
           </p>
           <select //LatestTime dropdown
+            id="latestTimeDropdown"
             value={latestTime}
             onChange={(e) => setLatestTime(e.target.value)}
             className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
@@ -256,6 +261,7 @@ const EventForm = ({
 
         <div className="mb-4">
           <button
+            id="weeklyBtn"
             type="button"
             className={`btn ${mode === 'weekly' ? 'btn-active' : ''}`}
             onClick={() => {
@@ -266,6 +272,7 @@ const EventForm = ({
             Weekly Days
           </button>
           <button
+            id="specificBtn"
             type="button"
             className={`btn ${mode === 'specific' ? 'btn-active' : ''}`}
             onClick={() => {
@@ -373,6 +380,7 @@ const EventForm = ({
             >
               {days.map((day) => (
                 <input
+                  id={day}
                   key={day}
                   className="btn btn-circle btn-sm h-10 w-10 border-gray-300 text-sm font-normal"
                   type="checkbox"
@@ -390,6 +398,7 @@ const EventForm = ({
         )}
 
         <select //Timezone dropdown
+          id="timezoneDropdown"
           value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
           className="select w-full border-gray-300 text-base font-normal"
@@ -412,6 +421,7 @@ const EventForm = ({
       >
         {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
           <button
+            id="addAvailabilityBtn"
             className="btn btn-primary ml-4 rounded-full px-4 py-2"
             onClick={openModal}
           >
@@ -424,6 +434,7 @@ const EventForm = ({
             className="flex flex-row justify-center gap-4"
           >
             <button
+              id="createEventBtn"
               className="btn btn-primary rounded-full px-4 py-2"
               onClick={() => {
                 setIsButtonsVisible(false)
@@ -440,6 +451,7 @@ const EventForm = ({
             <h3 className="py-4 text-lg font-bold">Sign In</h3>
 
             <input
+              id="usernameInput"
               type="text"
               placeholder="Enter Your Name"
               className="input input-bordered w-full max-w-xs py-4"
@@ -452,6 +464,7 @@ const EventForm = ({
             <div className="modal-action">
               <form method="dialog">
                 <button
+                  id="signInBtn"
                   className="btn btn-primary ml-4 rounded-full px-4 py-2"
                   onClick={() => {
                     setIsAvailable(true) // Update isAvailable to true when name is entered
