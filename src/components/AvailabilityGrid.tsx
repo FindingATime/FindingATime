@@ -66,6 +66,15 @@ const Grid = ({
     colIndex: number
   } | null>(null)
   const [timeSegmentType, setTimeSegmentType] = useState('Regular')
+  const [displayTimeType, setDisplayTimeType] = useState<
+    'Regular' | 'Preferred'
+  >('Regular')
+
+  const handleToggle = () => {
+    setDisplayTimeType((prevType) =>
+      prevType === 'Regular' ? 'Preferred' : 'Regular',
+    )
+  }
 
   const addDateToSchedule = (date: string, timeSegments: TimeSegment[]) => {
     const newSchedule = { ...schedule }
@@ -281,7 +290,9 @@ const Grid = ({
   const generateGridGradient = (
     numRespondersAvailable: number,
     totalResponders: number,
-    segmentType: string | null,
+    date: string,
+    time: string,
+    schedule: Schedule,
   ): string => {
     if (totalResponders === 0) return '' // No responders, no color
 
@@ -292,7 +303,18 @@ const Grid = ({
     const fraction = numRespondersAvailable / totalResponders
     const index = Math.floor(fraction * (shades.length - 1))
     const shade = shades[index]
-    return segmentType === 'Regular' ? `bg-emerald-${shade}` : `bg-sky-${shade}`
+
+    // Check if the time segment is in the schedule
+    const segments = schedule[date] || []
+    for (const segment of segments) {
+      if (time === segment.beginning) {
+        console.log('TRUE')
+      }
+    }
+
+    return displayTimeType === 'Regular'
+      ? `bg-emerald-${shade}`
+      : `bg-sky-${shade}`
   }
 
   const getSegmentType = (date: string, time: string, schedule: Schedule) => {
@@ -430,7 +452,9 @@ const Grid = ({
                             ? generateGridGradient(
                                 numRespondersAvailable,
                                 responders?.length || 0,
-                                timeSegmentType,
+                                date as string,
+                                time,
+                                schedule,
                               )
                             : ''
                         }
@@ -462,12 +486,39 @@ const Grid = ({
           </div>
         </div>
       </div>
-      {isAvailable && (
+      {isAvailable ? (
         <div className="flex justify-center">
           <ToggleButton
             timeSegmentType={timeSegmentType}
             setTimeSegmentType={setTimeSegmentType}
           />
+        </div>
+      ) : (
+        <div className="mb-2 flex justify-center">
+          <button
+            onClick={handleToggle}
+            className={`flex w-40 items-center rounded-full px-4 py-2 transition-colors duration-300
+                ${
+                  displayTimeType === 'Regular'
+                    ? 'bg-emerald-300'
+                    : 'bg-sky-300'
+                }`}
+          >
+            <span
+              className={`mr-3 truncate font-medium text-white`}
+              style={{ maxWidth: 'calc(100% - 2rem)' }} // Ensure text does not overflow the button
+            >
+              {displayTimeType}
+            </span>
+            <div
+              className={`h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-300
+                  ${
+                    displayTimeType === 'Regular'
+                      ? 'translate-x-0'
+                      : 'translate-x-6'
+                  }`}
+            ></div>
+          </button>
         </div>
       )}
     </div>
