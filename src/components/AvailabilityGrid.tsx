@@ -273,6 +273,7 @@ const Grid = ({
       const date = formattedDate(config[colIndex])
       addDateToSchedule(date, [selectedTimeSegment])
     }
+    console.log('schedule', schedule)
     setGrid(newGrid)
   }
 
@@ -280,6 +281,7 @@ const Grid = ({
   const generateGridGradient = (
     numRespondersAvailable: number,
     totalResponders: number,
+    segmentType: string | null,
   ): string => {
     if (totalResponders === 0) return '' // No responders, no color
 
@@ -290,7 +292,17 @@ const Grid = ({
     const fraction = numRespondersAvailable / totalResponders
     const index = Math.floor(fraction * (shades.length - 1))
     const shade = shades[index]
-    return `bg-emerald-${shade}`
+    return segmentType === 'Regular' ? `bg-emerald-${shade}` : `bg-sky-${shade}`
+  }
+
+  const getSegmentType = (date: string, time: string, schedule: Schedule) => {
+    const segments = schedule[date] || []
+    for (const segment of segments) {
+      if (time === segment.beginning) {
+        return segment.type
+      }
+    }
+    return null
   }
 
   return (
@@ -390,49 +402,61 @@ const Grid = ({
               onMouseLeave={handleMouseLeaveGrid} // Handle mouse leave for grid body
             >
               {grid.map((row, rowIndex) =>
-                row.map((numRespondersAvailable, colIndex) => (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
-                      ${
-                        numRespondersAvailable && isAvailable
-                          ? timeSegmentType === 'Regular'
-                            ? 'bg-emerald-300'
-                            : 'bg-sky-300'
-                          : isAvailable
-                            ? 'bg-red-50'
-                            : '' // Red while editing schedule
+                row.map((numRespondersAvailable, colIndex) => {
+                  // Convert rowIndex and colIndex to date and time
+                  const date = dates && dates[colIndex]
+                  const time = timeArray[rowIndex]
+
+                  const timeSegmentType = getSegmentType(
+                    date as string,
+                    time,
+                    schedule,
+                  )
+                  return (
+                    <div
+                      key={`${rowIndex}-${colIndex}`}
+                      className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
+                        ${
+                          numRespondersAvailable && isAvailable
+                            ? timeSegmentType === 'Regular'
+                              ? 'bg-emerald-300'
+                              : 'bg-sky-300'
+                            : isAvailable
+                              ? 'bg-red-50'
+                              : '' // Red while editing schedule
+                        }
+                        ${
+                          numRespondersAvailable && responders
+                            ? generateGridGradient(
+                                numRespondersAvailable,
+                                responders?.length || 0,
+                                timeSegmentType,
+                              )
+                            : ''
+                        }
+                        ${
+                          // Change cursor to pointer if grid is selectable
+                          isAvailable ? 'cursor-pointer' : 'cursor-default'
+                        } ${
+                          // Add border-dashed to cell if it is the hovered cell
+                          hoveredCell?.rowIndex === rowIndex &&
+                          hoveredCell?.colIndex === colIndex
+                            ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
+                            : ''
+                        }`}
+                      onMouseDown={
+                        (dates?.length as number) > 0
+                          ? () => handleMouseDown(rowIndex, colIndex)
+                          : undefined
                       }
-                      ${
-                        numRespondersAvailable && responders
-                          ? generateGridGradient(
-                              numRespondersAvailable,
-                              responders?.length || 0,
-                            )
-                          : ''
+                      onMouseEnter={
+                        (dates?.length as number) > 0
+                          ? () => handleMouseEnter(rowIndex, colIndex)
+                          : undefined
                       }
-                      ${
-                        // Change cursor to pointer if grid is selectable
-                        isAvailable ? 'cursor-pointer' : 'cursor-default'
-                      } ${
-                        // Add border-dashed to cell if it is the hovered cell
-                        hoveredCell?.rowIndex === rowIndex &&
-                        hoveredCell?.colIndex === colIndex
-                          ? 'border-1 border-dashed ring-1 ring-gray-900 ring-opacity-10 drop-shadow-md hover:border-black'
-                          : ''
-                      }`}
-                    onMouseDown={
-                      (dates?.length as number) > 0
-                        ? () => handleMouseDown(rowIndex, colIndex)
-                        : undefined
-                    }
-                    onMouseEnter={
-                      (dates?.length as number) > 0
-                        ? () => handleMouseEnter(rowIndex, colIndex)
-                        : undefined
-                    }
-                  ></div>
-                )),
+                    ></div>
+                  )
+                }),
               )}
             </div>
           </div>

@@ -36,6 +36,7 @@ const ViewEvent = () => {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [newSchedule, setNewSchedule] = useState<Schedule>({})
+  const [attendeeTimeSegments, setAttendeeTimeSegments] = useState<Schedule>({})
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -147,6 +148,9 @@ const ViewEvent = () => {
       .then((data) => {
         if (data) {
           //format attendee data
+          setAttendeeTimeSegments(
+            data.map((attendee: Attendee) => attendee.timesegments),
+          )
           const formattedData = formatAttendeeData(data)
           setResponders(formattedData) // Set the responders state with the fetched data
         } else {
