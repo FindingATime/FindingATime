@@ -65,7 +65,6 @@ const Grid = ({
     rowIndex: number
     colIndex: number
   } | null>(null)
-  const [timeSegmentType, setTimeSegmentType] = useState('Regular')
   const [displayTimeType, setDisplayTimeType] = useState<
     'Regular' | 'Preferred'
   >('Regular')
@@ -249,7 +248,7 @@ const Grid = ({
     const selectedTimeSegment = {
       beginning: timeArray[rowIndex],
       end: timeArray[rowIndex + 1],
-      type: timeSegmentType,
+      type: displayTimeType,
     }
 
     if (
@@ -305,20 +304,25 @@ const Grid = ({
     const shade = shades[index]
 
     // Check if the time segment is in the schedule
-    const segments = schedule[date] || []
-    for (const segment of segments) {
-      if (time === segment.beginning) {
-        console.log('TRUE')
-      }
-    }
+    // const segments = schedule[date] || []
+    // for (const segment of segments) {
+    //   if (time === segment.beginning) {
+    //     console.log('TRUE')
+    //   }
+    // }
 
-    return displayTimeType === 'Regular'
-      ? `bg-emerald-${shade}`
-      : `bg-sky-${shade}`
+    return `bg-emerald-${shade}`
   }
 
   const getSegmentType = (date: string, time: string, schedule: Schedule) => {
-    const segments = schedule[date] || []
+    const today = new Date()
+    const year = today.getUTCFullYear()
+    const segments =
+      mode === 'specific'
+        ? schedule[
+            convertDateStringToDateObject(date + ' ' + year).toString()
+          ] || []
+        : schedule[date] || []
     for (const segment of segments) {
       if (time === segment.beginning) {
         return segment.type
@@ -426,7 +430,7 @@ const Grid = ({
               {grid.map((row, rowIndex) =>
                 row.map((numRespondersAvailable, colIndex) => {
                   // Convert rowIndex and colIndex to date and time
-                  const date = dates && dates[colIndex]
+                  const date = dates && dates[colIndex] ? dates[colIndex] : ''
                   const time = timeArray[rowIndex]
 
                   const timeSegmentType = getSegmentType(
@@ -448,7 +452,7 @@ const Grid = ({
                               : '' // Red while editing schedule
                         }
                         ${
-                          numRespondersAvailable && responders
+                          numRespondersAvailable && responders && !isAvailable
                             ? generateGridGradient(
                                 numRespondersAvailable,
                                 responders?.length || 0,
@@ -486,14 +490,7 @@ const Grid = ({
           </div>
         </div>
       </div>
-      {isAvailable ? (
-        <div className="flex justify-center">
-          <ToggleButton
-            timeSegmentType={timeSegmentType}
-            setTimeSegmentType={setTimeSegmentType}
-          />
-        </div>
-      ) : (
+      {isAvailable && (
         <div className="mb-2 flex justify-center">
           <button
             onClick={handleToggle}

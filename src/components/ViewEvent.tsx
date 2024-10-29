@@ -20,6 +20,7 @@ import EventFormView from '@/components/EventFormView'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import Username from '@/components/Username'
+import PreferredTimes from '@/components/PreferredTimes'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -109,6 +110,8 @@ const ViewEvent = () => {
           config: data[0].config || {},
           mode: data[0].mode,
         }
+
+        console.log('newEvent', newEvent)
 
         setEvent(newEvent)
         // Update the recently viewed events in local storage
@@ -396,6 +399,10 @@ const ViewEvent = () => {
             className="sticky top-0 h-1 w-full py-8 md:w-[13%]"
           >
             <Responses responders={responders} hoveredCell={hoveredCell} />
+            <PreferredTimes
+              attendeeTimeSegments={attendeeTimeSegments}
+              mode={'weekly'}
+            />
           </section>
         </div>
       </div>
