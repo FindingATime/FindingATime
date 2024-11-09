@@ -86,8 +86,8 @@ const EventForm = ({
             title !== null && 'mb-6'
           }`}
         />
-        {title === null && (
-          <p className="mb-3 p-0 text-error">Title is required</p>
+        {(title === null || title === '') && (
+          <p className="mb-3 p-0 text-error">Title is required.</p>
         )}
 
         <textarea //Event Description text input

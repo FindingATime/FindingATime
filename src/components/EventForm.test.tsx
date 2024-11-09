@@ -19,7 +19,6 @@ import exp from 'constants'
 describe('Event Form Component', () => {
   it('should present an error when title is empty', () => {
     // Arrange
-    const title = 'Test Title'
     const setTitle = jest.fn()
     const description = 'Test Description'
     const setDescription = jest.fn()
@@ -38,7 +37,7 @@ describe('Event Form Component', () => {
 
     const eventForm = render(
       <EventForm
-        title={title}
+        title=""
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
