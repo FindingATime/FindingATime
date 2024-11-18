@@ -20,6 +20,7 @@ import EventFormView from '@/components/EventFormView'
 import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import Username from '@/components/Username'
+import PreferredTimes from '@/components/PreferredTimes'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -36,6 +37,7 @@ const ViewEvent = () => {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [newSchedule, setNewSchedule] = useState<Schedule>({})
+  const [attendeeTimeSegments, setAttendeeTimeSegments] = useState<Schedule>({})
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -147,6 +149,9 @@ const ViewEvent = () => {
       .then((data) => {
         if (data) {
           //format attendee data
+          setAttendeeTimeSegments(
+            data.map((attendee: Attendee) => attendee.timesegments),
+          )
           const formattedData = formatAttendeeData(data)
           setResponders(formattedData) // Set the responders state with the fetched data
         } else {
@@ -392,6 +397,10 @@ const ViewEvent = () => {
             className="sticky top-0 h-1 w-full py-8 md:w-[13%]"
           >
             <Responses responders={responders} hoveredCell={hoveredCell} />
+            <PreferredTimes
+              attendeeTimeSegments={attendeeTimeSegments}
+              mode={'weekly'}
+            />
           </section>
         </div>
       </div>

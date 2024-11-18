@@ -28,6 +28,16 @@ export default function FAQ() {
       answer:
         'Visit your Event or find and visit the link on the Dashboard.  Look at the availability grid and see when the best time to meet is by hovering over the darkest green cells.  Hovering over a cell identifies which respondents, highlighted in green, are available in the Responders list on the right.',
     },
+    {
+      question: 'What is the difference between Regular and Preferred times?',
+      answer:
+        'Regular times are times you are available to meet, while Preferred times are times you would prefer to meet. Event attendees can see how many attendees are available based on both their regular and preferred times, and use that to determine the best time to meet.',
+    },
+    {
+      question: 'How can I set a preferred time?',
+      answer:
+        'When adding your availability, use the toggle beneath the availability grid to toggle between adding times as "Regular" or "Preferred". "Regular" times are added to the grid in green, while "Preferred" times are added in blue. The grid does not distinguish between the two in view mode, but there will be a list beneath the Responders list of the number of attendees available in times that are marked as "Preferred".',
+    },
   ]
 
   const [openIndex, setOpenIndex] = useState<number | null>(null)
