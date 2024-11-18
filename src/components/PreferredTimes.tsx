@@ -61,7 +61,6 @@ export default function PreferredTimes({
       </h3>
       <ul className="text-xs text-gray-500">
         {sortTimesList.map(([timeAndDate, count], index) => {
-          console.log('timesList in map', timesList)
           return (
             <li key={index} className="text-gray-500">
               {timeAndDate} [{count}]

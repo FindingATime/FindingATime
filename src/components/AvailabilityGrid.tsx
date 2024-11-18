@@ -281,7 +281,6 @@ const Grid = ({
       const date = formattedDate(config[colIndex])
       addDateToSchedule(date, [selectedTimeSegment])
     }
-    console.log('schedule', schedule)
     setGrid(newGrid)
   }
 
@@ -302,15 +301,6 @@ const Grid = ({
     const fraction = numRespondersAvailable / totalResponders
     const index = Math.floor(fraction * (shades.length - 1))
     const shade = shades[index]
-
-    // Check if the time segment is in the schedule
-    // const segments = schedule[date] || []
-    // for (const segment of segments) {
-    //   if (time === segment.beginning) {
-    //     console.log('TRUE')
-    //   }
-    // }
-
     return `bg-emerald-${shade}`
   }
 

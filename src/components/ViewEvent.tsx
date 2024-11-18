@@ -111,8 +111,6 @@ const ViewEvent = () => {
           mode: data[0].mode,
         }
 
-        console.log('newEvent', newEvent)
-
         setEvent(newEvent)
         // Update the recently viewed events in local storage
         if (!localStorage.getItem('FindingATimeRecentlyViewed')) {
