@@ -1,15 +1,12 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { randomUUID, UUID } from 'crypto'
-import { addUserCreateEvent, getUser } from '@/utils/userUtils'
-import { insertEvent } from '@/utils/eventsUtils'
-import { addAttendee, Schedule } from '@/utils/attendeesUtils'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { UUID } from 'crypto'
+import { getUser } from '@/utils/userUtils'
+import { Schedule } from '@/utils/attendeesUtils'
 
 import EventForm from '@/components/EventForm'
 import Grid from '@/components/AvailabilityGrid'
 import Header from '@/components/Header'
-import Username from '@/components/Username'
 
 export default function CreateEvent() {
   const [title, setTitle] = useState<string | null>('')
@@ -24,20 +21,19 @@ export default function CreateEvent() {
 
   const [isAvailable, setIsAvailable] = useState(false) // set to true when name is entered at sign in, Determines if the grid is selectable (selection mode)
   const [userName, setUserName] = useState<string | null>(null) // set to name entered at sign in
-  const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
-  const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check if user is signed in
     const promises = []
     if (localStorage.getItem('username')) {
-      setUserName(localStorage.getItem('username') as string)
       const promise = getUser(localStorage.getItem('username') as UUID)
         .then((data) => {
           if (data) {
             setUserName(data[0].name)
+          } else {
+            setUserName('Guest')
           }
         })
         .catch((error) => {
@@ -49,9 +45,6 @@ export default function CreateEvent() {
       setLoading(false)
     })
   }, [])
-
-  //added router to redirect to view-event page after creating event
-  const router = useRouter()
 
   // TODO: append local to remote api call for selecting all responder usernames
   /*
@@ -68,91 +61,6 @@ export default function CreateEvent() {
   }
   */
 
-  // Create Event Button function
-  const handleSubmit = async () => {
-    const daysOfWeekJSON: { [key: string]: boolean } = {
-      Mon: false,
-      Tue: false,
-      Wed: false,
-      Thu: false,
-      Fri: false,
-      Sat: false,
-      Sun: false,
-    }
-    if (title?.length === 0) {
-      setTitle(null)
-    }
-    if (location?.length === 0) {
-      setLocation(null)
-    }
-    if (timezone?.length === 0) {
-      setTimezone(null)
-    }
-    if (config?.length === 0) {
-      setConfig(null)
-    }
-
-    const configJSON: { [key: string]: string[] } = {
-      days: [],
-    }
-
-    if (mode === 'weekly') {
-      config?.forEach((day) => {
-        if (daysOfWeekJSON.hasOwnProperty(day)) {
-          daysOfWeekJSON[day] = true
-        }
-      })
-    } else {
-      config?.forEach((day) => {
-        configJSON.days.push(day)
-      })
-    }
-
-    try {
-      await addUserCreateEvent(
-        userName ? userName : 'Guest',
-        title as string,
-        description,
-        earliestTime,
-        latestTime,
-        location as string,
-        timezone as string,
-        mode,
-        mode === 'weekly'
-          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
-          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
-      ).then((data) => {
-        // Add attendee to the event
-        addAttendee(
-          data[0].id,
-          localStorage.getItem('username') as UUID,
-          schedule,
-        )
-        // Redirects to the event view page using the eventId
-        router.push(`/view-event?eventId=${data[0].id}`)
-      })
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error:', error.message)
-      } else {
-        console.error('Unexpected error:', error)
-      }
-    }
-    // handleSaveResponse() // Call handleSaveResponse to save the response
-    setIsAvailable(false) // Set availability to false when user creates event/saves their availability
-    setIsButtonsVisible(false) // Hide buttons after user creates event
-  }
-
-  // Function to open modal for after clicking "Sign In"
-  const openModal = () => {
-    if (dialogRef.current && !userName) {
-      dialogRef.current.showModal()
-    } else {
-      setIsAvailable(true)
-      setIsButtonsVisible(true)
-    }
-  }
-
   return (
     <div className="w-full">
       <Header />
@@ -162,12 +70,9 @@ export default function CreateEvent() {
         <section //Left side container (Event form)
           className="sticky top-0 h-full w-full rounded-lg px-6 pb-16 shadow-lg md:w-[30%]"
         >
-          <div className="mb-6">
-            {userName != null && isAvailable && (
-              <Username username={userName} setUsername={setUserName} />
-            )}
-          </div>
           <EventForm
+            username={userName}
+            setUsername={setUserName}
             title={title}
             setTitle={setTitle}
             description={description}
@@ -184,50 +89,10 @@ export default function CreateEvent() {
             setConfig={setConfig}
             timezone={timezone}
             setTimezone={setTimezone}
+            isAvailable={isAvailable}
+            setIsAvailable={setIsAvailable}
+            schedule={schedule}
           />
-
-          <div //button container for positioning button
-            className="mx-4 flex justify-center pt-8"
-          >
-            {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
-              <button
-                className="btn btn-primary ml-4 rounded-full px-4 py-2"
-                onClick={openModal}
-              >
-                Add Availability
-              </button>
-            )}
-
-            <dialog ref={dialogRef} id="username_modal" className="modal">
-              <div className="modal-box focus:outline-white ">
-                <h3 className="py-4 text-lg font-bold">Sign In</h3>
-
-                <input
-                  type="text"
-                  placeholder="Enter Your Name"
-                  className="input input-bordered w-full max-w-xs py-4"
-                  value={userName ? userName : ''}
-                  onChange={(e) => {
-                    setUserName(e.target.value)
-                  }}
-                />
-
-                <div className="modal-action">
-                  <form method="dialog">
-                    <button
-                      className="btn btn-primary ml-4 rounded-full px-4 py-2"
-                      onClick={() => {
-                        setIsAvailable(true) // Update isAvailable to true when name is entered
-                        setIsButtonsVisible(true) // Show buttons when user signs in
-                      }}
-                    >
-                      Sign In
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </dialog>
-          </div>
         </section>
 
         <section //Middle side container (Availability Grid)
@@ -242,19 +107,6 @@ export default function CreateEvent() {
             schedule={schedule}
             setSchedule={setSchedule}
           />
-
-          {isButtonsVisible && ( // Conditionally render buttons section
-            <div //button container for positioning "Create Event" button
-              className="flex flex-row justify-center gap-4 pt-8 "
-            >
-              <button
-                className="btn btn-primary rounded-full px-4 py-2"
-                onClick={handleSubmit}
-              >
-                Create Event
-              </button>
-            </div>
-          )}
         </section>
       </div>
     </div>
