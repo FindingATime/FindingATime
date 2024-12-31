@@ -64,6 +64,7 @@ const EventForm = ({
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [isTitleChanged, setIsTitleChanged] = useState(false) // New state to control visibility of title error message
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -191,12 +192,15 @@ const EventForm = ({
           type="text"
           value={title as string}
           placeholder="New Event Title"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            setIsTitleChanged(true)
+          }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
             title !== null && 'mb-6'
           }`}
         />
-        {(title === null || title === '') && (
+        {(title === null || (title === '' && isTitleChanged)) && (
           <p className="mb-3 p-0 text-error">Title is required.</p>
         )}
 
