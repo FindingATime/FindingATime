@@ -29,6 +29,7 @@ const ViewEvent = () => {
   const [error, setError] = useState<string | null>(null)
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
+  const [beforeEditSchedule, setBeforeEditSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
 
   const [isAvailable, setIsAvailable] = useState(false)
@@ -278,9 +279,16 @@ const ViewEvent = () => {
                         )
                         const userSchedule = user?.timesegments
                         if (userSchedule != null) {
-                          setSchedule(userSchedule)
+                          console.log('BeforeEditSchedule', beforeEditSchedule)
+                          console.log('Schedule', schedule)
+                          console.log('UserSchedule', userSchedule)
+                          setBeforeEditSchedule(
+                            JSON.parse(JSON.stringify(userSchedule)),
+                          )
+                          setSchedule(JSON.parse(JSON.stringify(userSchedule)))
                         } else {
                           setSchedule({})
+                          setBeforeEditSchedule({})
                         }
                       }}
                     >
@@ -325,8 +333,11 @@ const ViewEvent = () => {
                   <button
                     className="btn btn-outline rounded-full px-4 py-2 text-red-400 hover:!border-red-400 hover:bg-red-300"
                     onClick={() => {
-                      setIsAvailable(false)
+                      console.log('BeforeEditSchedule', beforeEditSchedule)
+                      console.log('Schedule', schedule)
+                      setSchedule(beforeEditSchedule)
                       setIsButtonsVisible(false)
+                      setIsAvailable(false)
                       setUserName('') // Reset username when user cancels
                       if (!localStorage.getItem('username')) {
                         setIsSignedIn(false)

@@ -153,7 +153,7 @@ const Grid = ({
         )
         const userSchedule = user?.timesegments
         if (userSchedule) {
-          setSchedule(userSchedule)
+          setSchedule(JSON.parse(JSON.stringify(userSchedule)))
         }
         setCurrentUserAvailability(userSchedule as Schedule)
         // loop through userSchedule like above and setup grid while editing schedule
