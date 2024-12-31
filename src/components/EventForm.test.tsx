@@ -1,5 +1,8 @@
 import { fireEvent, render } from '@/test/test-utils'
 import EventForm from '@/components/EventForm'
+import { Schedule } from '@/utils/attendeesUtils'
+import { assert } from 'console'
+import exp from 'constants'
 import { useRouter } from 'next/router'
 
 // What do we test?
@@ -15,28 +18,6 @@ import { useRouter } from 'next/router'
 // in-situ
 // separate test folder
 
-const userName = 'test title'
-const setUserName = () => {}
-const title = ''
-const setTitle = () => {}
-const description = ''
-const setDescription = () => {}
-const location = ''
-const setLocation = () => {}
-const earliestTime = ''
-const setEarliestTime = () => {}
-const latestTime = ''
-const setLatestTime = () => {}
-const mode = ''
-const setMode = () => {}
-const config: string[] = []
-const setConfig = () => {}
-const timezone = ''
-const setTimezone = () => {}
-const isAvailable = false
-const setIsAvailable = () => {}
-const schedule = {}
-
 jest.mock('next/router', () => ({
   useRouter: jest.fn(),
 }))
@@ -47,19 +28,41 @@ jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(() => new URLSearchParams()),
 }))
 
-describe('EventForm component', () => {
-  it('should render an event form with correct inputs', () => {
+describe('Event Form Component', () => {
+  it('should present an error when title is empty', () => {
     // Arrange
+    const username = 'Test User'
+    const setUsername = jest.fn()
+    const setTitle = jest.fn()
+    const description = 'Test Description'
+    const setDescription = jest.fn()
+    const location = 'Test Location'
+    const setLocation = jest.fn()
+    const earliestTime = '9:00 AM'
+    const setEarliestTime = jest.fn()
+    const latestTime = '5:00 PM'
+    const setLatestTime = jest.fn()
+    const mode = 'weekly'
+    const setMode = jest.fn()
+    const config = ['Mon']
+    const setConfig = jest.fn()
+    const timezone = 'Test Timezone'
+    const setTimezone = jest.fn()
+    const isAvailable = true
+    const setIsAvailable = jest.fn()
+    const schedule = {} as Schedule
+
     const mockRouter = {
       push: jest.fn(),
       pathname: '/create-event',
     }
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+
     const eventForm = render(
       <EventForm
-        username={userName}
-        setUsername={setUserName}
-        title={title}
+        username={username}
+        setUsername={setUsername}
+        title=""
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
@@ -83,52 +86,9 @@ describe('EventForm component', () => {
 
     // Act
     const titleInput = eventForm.container.querySelector('#titleInput')
-    const descriptionInput =
-      eventForm.container.querySelector('#descriptionInput')
-    const locationInput = eventForm.container.querySelector('#locationInput')
-    const earliestTimeDropdown = eventForm.container.querySelector(
-      '#earliestTimeDropdown',
-    )
-    const latestTimeDropdown = eventForm.container.querySelector(
-      '#latestTimeDropdown',
-    )
-    const weeklyBtn = eventForm.container.querySelector('#weeklyBtn')
-    const sundayBtn = eventForm.container.querySelector('#Sun')
-    const mondayBtn = eventForm.container.querySelector('#Mon')
-    const timezoneDropdown =
-      eventForm.container.querySelector('#timezoneDropdown')
-
-    fireEvent.change(titleInput as Element, { target: { value: 'test title' } })
-    fireEvent.change(descriptionInput as Element, {
-      target: { value: 'test description' },
-    })
-    fireEvent.change(locationInput as Element, {
-      target: { value: 'test location' },
-    })
-
-    fireEvent.change(earliestTimeDropdown as HTMLSelectElement, {
-      target: { value: '10:00 AM' },
-    })
-    fireEvent.change(latestTimeDropdown as HTMLSelectElement, {
-      target: { value: '6:00 PM' },
-    })
-    fireEvent.change(timezoneDropdown as HTMLSelectElement, {
-      target: { value: 'PST' },
-    })
-
-    fireEvent.click(weeklyBtn as Element)
-    fireEvent.click(sundayBtn as Element)
-    fireEvent.click(mondayBtn as Element)
-    console.log('titleInput:', titleInput)
+    fireEvent.change(titleInput as Element, { target: { value: '' } })
 
     // Assert
-    expect((titleInput as HTMLInputElement).value).toBe('test title')
-    expect((descriptionInput as HTMLInputElement).value).toBe(
-      'test description',
-    )
-    expect((locationInput as HTMLInputElement).value).toBe('test location')
-    expect((earliestTimeDropdown as HTMLSelectElement).value).toBe('10:00 AM')
-    expect((latestTimeDropdown as HTMLSelectElement).value).toBe('6:00 PM')
-    expect((timezoneDropdown as HTMLSelectElement).value).toBe('PST')
+    expect(eventForm.getByText('Title is required.')).toBeInTheDocument()
   })
 })
