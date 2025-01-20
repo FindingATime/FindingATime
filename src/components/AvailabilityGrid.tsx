@@ -4,10 +4,13 @@ import { generateTimeRange } from '@/utils/timeUtils'
 import {
   months,
   convertDateStringToDateObject,
+  convertDateToMonthDayYear,
+  formatDateMonthDay,
   formattedDate,
 } from '@/utils/dateUtils'
 import { TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { UUID } from 'crypto'
+import { time } from 'console'
 
 interface GridProps {
   earliestTime: string
@@ -266,9 +269,10 @@ const Grid = ({
   const toggleCell = (rowIndex: number, colIndex: number) => {
     if (isSelectingMeetingTime && meetingTimeSegment && setMeetingTimeSegment) {
       if (grid[rowIndex][colIndex]) {
+        // create timesegment of the selected cell and get the date
         const timeSegmentType = config
           ? getSegmentType(config[colIndex], timeArray[rowIndex], schedule)
-          : 'Meeting'
+          : 'Regular'
         const timesegment = {
           beginning: timeArray[rowIndex],
           end: timeArray[rowIndex + 1],
@@ -276,6 +280,7 @@ const Grid = ({
         }
         const date = config ? formattedDate(config[colIndex]) : 'Invalid Date'
 
+        // find the selected time slot in the schedule
         let timeSegments = schedule[date]
 
         const segmentIndex = timeSegments.findIndex(
@@ -283,11 +288,9 @@ const Grid = ({
             timeSegment.beginning === timesegment.beginning &&
             timeSegment.end === timesegment.end,
         )
-        if (meetingTimeSegment.timesegment.beginning == '') {
-          timeSegments[segmentIndex].type = 'Meeting'
-        } else {
-          // reset the previous selected timeslot
-          console.log('meetingTimeSegment', meetingTimeSegment)
+
+        // if the selected slot is not a meeting slot, reset the previous selected slot and set the new one
+        if (timeSegmentType !== 'Meeting') {
           for (const date in schedule) {
             const timeSegments = schedule[date]
             const prevSegmentIndex = timeSegments.findIndex(
@@ -296,21 +299,20 @@ const Grid = ({
                   meetingTimeSegment.timesegment.beginning &&
                 timeSegment.end === meetingTimeSegment.timesegment.end,
             )
-            console.log('timeSegments', timeSegments)
-            console.log('prevSegmentIndex', prevSegmentIndex)
-            if (prevSegmentIndex !== -1) {
-              console.log(
-                'meetingTimeSegment.timesegment.type',
-                meetingTimeSegment.timesegment.type,
-              )
+            if (prevSegmentIndex !== -1 && date === meetingTimeSegment.date) {
               timeSegments[prevSegmentIndex].type =
                 meetingTimeSegment.timesegment.type
+              break
             }
           }
-          timeSegments[segmentIndex].type = 'Meeting'
         }
-        setMeetingTimeSegment({ date, timesegment })
-        schedule[date] = timeSegments
+
+        // set the new selected slot's type to Meeting
+        if (timeSegments[segmentIndex].type !== 'Meeting') {
+          setMeetingTimeSegment({ date, timesegment })
+          timeSegments[segmentIndex].type = 'Meeting'
+          schedule[date] = timeSegments
+        }
       }
       return
     }
@@ -379,9 +381,14 @@ const Grid = ({
     if (timeSegmentType === 'Regular') {
       color = `bg-emerald-${shade}`
     }
+
+    const meetingTimeFormattedDate = formatDateMonthDay(
+      meetingTimeSegment?.date || '',
+    )
+
     if (
       meetingTimeSegment?.timesegment.beginning === time &&
-      meetingTimeSegment?.date === date
+      meetingTimeFormattedDate === date
     ) {
       color = `bg-orange-${shade}`
     }

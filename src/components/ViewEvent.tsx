@@ -414,6 +414,10 @@ const ViewEvent = () => {
                       setIsButtonsVisible(false)
                       setIsSelectingMeetingTime(false)
                       setUserName('') // Reset username when user cancels
+                      setMeetingTimeSegment({
+                        date: '',
+                        timesegment: { beginning: '', end: '', type: '' },
+                      })
                       if (!localStorage.getItem('username')) {
                         setIsSignedIn(false)
                       }

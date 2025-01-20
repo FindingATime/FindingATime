@@ -45,6 +45,15 @@ export const isSameDate = (date1: string, date2: string) => {
   return month + ' ' + dateDay + ' ' + year === date2
 }
 
+// format a date object string as 'Month Day'
+export const formatDateMonthDay = (dateString: string): string => {
+  if (dateString === '') {
+    return 'Invalid Date'
+  }
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 // if date is in the format 'Month Day Year', return the date in the format of the toString of a date object
 export const formattedDate = (date: string) => {
   return convertDateStringToDateObject(date).toString() !== 'Invalid Date'
