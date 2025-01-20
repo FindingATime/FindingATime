@@ -5,12 +5,13 @@ import {
   Attendee,
   getAttendees,
   editAttendee,
+  TimeSegment,
+  Schedule,
 } from '@/utils/attendeesUtils'
 
-import { Suspense, useEffect, useState, useRef, lazy } from 'react'
-import { redirect, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getEvent, Event } from '@/utils/eventsUtils'
-import { Schedule } from '@/utils/attendeesUtils'
 import { createUser, getUser } from '@/utils/userUtils'
 import { days, months } from '@/utils/dateUtils'
 
@@ -25,11 +26,12 @@ import PreferredTimes from '@/components/PreferredTimes'
 const ViewEvent = () => {
   const searchParams = useSearchParams()
   const eventId = searchParams.get('eventId')
-  const [event, setEvent] = useState<any>(null)
+  const [event, setEvent] = useState<Event>()
   const [error, setError] = useState<string | null>(null)
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
+  const [creatorID, setCreatorID] = useState<UUID | null>(null)
 
   const [isAvailable, setIsAvailable] = useState(false)
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
@@ -38,6 +40,11 @@ const ViewEvent = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [newSchedule, setNewSchedule] = useState<Schedule>({})
   const [attendeeTimeSegments, setAttendeeTimeSegments] = useState<Schedule>({})
+  const [isSelectingMeetingTime, setIsSelectingMeetingTime] = useState(false)
+  const [meetingTimeSegment, setMeetingTimeSegment] = useState<{
+    date: string
+    timesegment: TimeSegment
+  }>({ date: '', timesegment: { beginning: '', end: '', type: '' } })
 
   const [responders, setResponders] = useState<Attendee[]>([]) // Set the responders state with the fetched data
   const [hoveredCell, setHoveredCell] = useState<{
@@ -78,9 +85,9 @@ const ViewEvent = () => {
   // gets attendee data from the API and formats it
   const formatAttendeeData = (attendees: Attendee[]): Attendee[] => {
     return attendees.map((attendee) => ({
-      users: attendee.users, // Ensure this matches the expected structure
-      attendee: attendee.attendee, // Ensure this matches the expected structure
-      timesegments: attendee.timesegments, // Ensure this matches the expected structure
+      users: attendee.users,
+      attendee: attendee.attendee,
+      timesegments: attendee.timesegments,
     }))
   }
 
@@ -109,7 +116,13 @@ const ViewEvent = () => {
           location: data[0].location,
           config: data[0].config || {},
           mode: data[0].mode,
+          creator: data[0].creator,
         }
+        setCreatorID(
+          localStorage.getItem('username')
+            ? (localStorage.getItem('username') as UUID)
+            : null,
+        )
 
         setEvent(newEvent)
         // Update the recently viewed events in local storage
@@ -154,6 +167,44 @@ const ViewEvent = () => {
           )
           const formattedData = formatAttendeeData(data)
           setResponders(formattedData) // Set the responders state with the fetched data
+
+          // set schedule to be the availabilities for the event submitted by users
+          // currently only users in the responders list can see the events colored
+          if (eventId && formattedData) {
+            const user = formattedData.find(
+              (responder) =>
+                responder.attendee ===
+                (localStorage.getItem('username') as UUID),
+            )
+            const isMeetingTimeSet = formattedData.some((responder) =>
+              Object.values(responder.timesegments).some((timeSegmentsArray) =>
+                timeSegmentsArray.some(
+                  (timesegment) => timesegment.type === 'Meeting',
+                ),
+              ),
+            )
+            if (isMeetingTimeSet) {
+              setIsSelectingMeetingTime(false)
+              const foundMeetingTime = formattedData
+                .flatMap((responder) =>
+                  Object.entries(responder.timesegments).flatMap(
+                    ([date, timeSegmentsArray]) =>
+                      timeSegmentsArray
+                        .filter((timesegment) => timesegment.type === 'Meeting')
+                        .map((timesegment) => ({ date, timesegment })),
+                  ),
+                )
+                .find(() => true)
+              if (foundMeetingTime) {
+                setMeetingTimeSegment(foundMeetingTime)
+              }
+            }
+
+            const userSchedule = user?.timesegments
+            if (userSchedule) {
+              setSchedule(userSchedule)
+            }
+          }
         } else {
           setError('No attendees found')
         }
@@ -192,6 +243,23 @@ const ViewEvent = () => {
     }
   }
 
+  const createGoogleCalendarInvite = async () => {
+    // Create Google Calendar Invite
+
+    const title = encodeURIComponent(event?.title as string)
+    const description = encodeURIComponent(event?.description as string)
+    const mylocation = encodeURIComponent(event?.location as string)
+    const startDateTime = encodeURIComponent(
+      meetingTimeSegment?.timesegment.beginning || '',
+    )
+    const endDateTime = encodeURIComponent(
+      meetingTimeSegment?.timesegment.end || '',
+    )
+    const timeZone = encodeURIComponent('America/Los_Angeles')
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}`
+    window.open(url, '_blank')
+  }
+
   return (
     <>
       <div className="w-full">
@@ -222,6 +290,16 @@ const ViewEvent = () => {
               className="mx-4 flex justify-center pt-8"
             >
               <EventView // Event View which has Copy Link button
+                isCreator={event ? event.creator === creatorID : false}
+                isAvailable={isAvailable}
+                setIsAvailable={setIsAvailable}
+                isButtonsVisible={isButtonsVisible}
+                setIsButtonsVisible={setIsButtonsVisible}
+                responders={responders}
+                setSchedule={setSchedule}
+                isSelectingMeetingTime={isSelectingMeetingTime}
+                setIsSelectingMeetingTime={setIsSelectingMeetingTime}
+                meetingTimeSegment={meetingTimeSegment}
               />
             </div>
           </section>
@@ -240,12 +318,18 @@ const ViewEvent = () => {
                 schedule={schedule}
                 setSchedule={setSchedule}
                 onCellHover={handleCellHover}
+                isSelectingMeetingTime={isSelectingMeetingTime}
+                meetingTimeSegment={meetingTimeSegment}
+                setMeetingTimeSegment={setMeetingTimeSegment}
               />
             )}
             <div //button container for positioning "Save" and "Cancel" buttons
               className="flex flex-row justify-center gap-4"
             >
-              {isNewUser && !isSignedIn && !isButtonsVisible ? (
+              {isNewUser &&
+              !isSignedIn &&
+              !isButtonsVisible &&
+              meetingTimeSegment.timesegment.beginning === '' ? (
                 <div>
                   <button
                     className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
@@ -264,7 +348,8 @@ const ViewEvent = () => {
               ) : (
                 !isNewUser &&
                 isSignedIn &&
-                !isButtonsVisible && (
+                !isButtonsVisible &&
+                meetingTimeSegment.timesegment.beginning === '' && (
                   <div>
                     <button
                       className="btn btn-primary ml-4 rounded-full px-4 py-2 text-white"
@@ -327,6 +412,7 @@ const ViewEvent = () => {
                     onClick={() => {
                       setIsAvailable(false)
                       setIsButtonsVisible(false)
+                      setIsSelectingMeetingTime(false)
                       setUserName('') // Reset username when user cancels
                       if (!localStorage.getItem('username')) {
                         setIsSignedIn(false)
@@ -339,6 +425,9 @@ const ViewEvent = () => {
                   <button
                     className="btn btn-primary rounded-full px-4 py-2 text-white"
                     onClick={() => {
+                      if (isSelectingMeetingTime) {
+                        createGoogleCalendarInvite()
+                      }
                       if (isNewUser && userName) {
                         createUser(userName).then((data) => {
                           addAttendee(
@@ -384,9 +473,17 @@ const ViewEvent = () => {
                           })
                         })
                       }
+
+                      if (isSelectingMeetingTime) {
+                        setIsSelectingMeetingTime(false)
+                      }
                     }}
                   >
-                    {isNewUser ? 'Add Availability' : 'Save'}
+                    {isNewUser
+                      ? 'Add Availability'
+                      : isSelectingMeetingTime
+                        ? 'Create'
+                        : 'Save'}
                   </button>
                 </>
               )}

@@ -6,10 +6,8 @@ import {
   convertDateStringToDateObject,
   formattedDate,
 } from '@/utils/dateUtils'
-import { addAttendee, TimeSegment, Schedule } from '@/utils/attendeesUtils'
+import { TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { UUID } from 'crypto'
-import ToggleButton from '@/components/ToggleButton'
-import { time } from 'console'
 
 interface GridProps {
   earliestTime: string
@@ -25,6 +23,17 @@ interface GridProps {
   schedule: Schedule
   setSchedule: React.Dispatch<React.SetStateAction<Schedule>>
   onCellHover?: (day: string, time: string) => void // Callback function when hovering over a cell
+  isSelectingMeetingTime?: boolean
+  meetingTimeSegment?: {
+    date: string
+    timesegment: TimeSegment
+  }
+  setMeetingTimeSegment?: React.Dispatch<
+    React.SetStateAction<{
+      date: string
+      timesegment: TimeSegment
+    }>
+  >
 }
 
 const Grid = ({
@@ -37,6 +46,9 @@ const Grid = ({
   schedule,
   setSchedule,
   onCellHover,
+  isSelectingMeetingTime,
+  meetingTimeSegment,
+  setMeetingTimeSegment,
 }: GridProps) => {
   // Generate time array for row headings
   const timeArray = generateTimeRange(earliestTime, latestTime)
@@ -66,7 +78,7 @@ const Grid = ({
     colIndex: number
   } | null>(null)
   const [displayTimeType, setDisplayTimeType] = useState<
-    'Regular' | 'Preferred'
+    'Regular' | 'Preferred' | 'Meeting'
   >('Regular')
 
   const handleToggle = () => {
@@ -83,6 +95,11 @@ const Grid = ({
 
   // Populate the grid with creator's availability times saved in the database (view-event)
   useEffect(() => {
+    if (isSelectingMeetingTime) {
+      setDisplayTimeType('Meeting')
+    } else {
+      setDisplayTimeType('Regular')
+    }
     if (mode === 'weekly') {
       const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       let sortedConfig = config as string[]
@@ -90,7 +107,9 @@ const Grid = ({
         (a, b) => order.indexOf(a) - order.indexOf(b),
       )
       setDates(sortedConfig as string[])
-      setSchedule({}) // if user chooses new dates, clear the schedule
+      if (!onCellHover) {
+        setSchedule({}) // if user chooses new dates, clear the schedule
+      }
     } else {
       // Sort dates in ascending order
       let newConfig: string[] = config as string[]
@@ -105,7 +124,9 @@ const Grid = ({
         )
       })
       setDates(newConfig)
-      setSchedule({}) // if user chooses new dates, clear the schedule
+      if (!onCellHover) {
+        setSchedule({}) // if user chooses new dates, clear the schedule
+      }
     }
 
     // Only populate grid if in view mode and responder's time segments is not empty
@@ -243,6 +264,56 @@ const Grid = ({
 
   // Function toggles the value of a cell
   const toggleCell = (rowIndex: number, colIndex: number) => {
+    if (isSelectingMeetingTime && meetingTimeSegment && setMeetingTimeSegment) {
+      if (grid[rowIndex][colIndex]) {
+        const timeSegmentType = config
+          ? getSegmentType(config[colIndex], timeArray[rowIndex], schedule)
+          : 'Meeting'
+        const timesegment = {
+          beginning: timeArray[rowIndex],
+          end: timeArray[rowIndex + 1],
+          type: timeSegmentType,
+        }
+        const date = config ? formattedDate(config[colIndex]) : 'Invalid Date'
+
+        let timeSegments = schedule[date]
+
+        const segmentIndex = timeSegments.findIndex(
+          (timeSegment) =>
+            timeSegment.beginning === timesegment.beginning &&
+            timeSegment.end === timesegment.end,
+        )
+        if (meetingTimeSegment.timesegment.beginning == '') {
+          timeSegments[segmentIndex].type = 'Meeting'
+        } else {
+          // reset the previous selected timeslot
+          console.log('meetingTimeSegment', meetingTimeSegment)
+          for (const date in schedule) {
+            const timeSegments = schedule[date]
+            const prevSegmentIndex = timeSegments.findIndex(
+              (timeSegment) =>
+                timeSegment.beginning ===
+                  meetingTimeSegment.timesegment.beginning &&
+                timeSegment.end === meetingTimeSegment.timesegment.end,
+            )
+            console.log('timeSegments', timeSegments)
+            console.log('prevSegmentIndex', prevSegmentIndex)
+            if (prevSegmentIndex !== -1) {
+              console.log(
+                'meetingTimeSegment.timesegment.type',
+                meetingTimeSegment.timesegment.type,
+              )
+              timeSegments[prevSegmentIndex].type =
+                meetingTimeSegment.timesegment.type
+            }
+          }
+          timeSegments[segmentIndex].type = 'Meeting'
+        }
+        setMeetingTimeSegment({ date, timesegment })
+        schedule[date] = timeSegments
+      }
+      return
+    }
     const newGrid = [...grid]
     newGrid[rowIndex][colIndex] = !newGrid[rowIndex][colIndex]
     const selectedTimeSegment = {
@@ -301,7 +372,26 @@ const Grid = ({
     const fraction = numRespondersAvailable / totalResponders
     const index = Math.floor(fraction * (shades.length - 1))
     const shade = shades[index]
-    return `bg-emerald-${shade}`
+
+    const timeSegmentType = getSegmentType(date, time, schedule)
+
+    let color = 'bg-emerald-600'
+    if (timeSegmentType === 'Regular') {
+      color = `bg-emerald-${shade}`
+    }
+    if (
+      meetingTimeSegment?.timesegment.beginning === time &&
+      meetingTimeSegment?.date === date
+    ) {
+      color = `bg-orange-${shade}`
+    }
+    // else if(timeSegmentType === 'Preferred') {
+    //   color = `bg-sky-${shade}`
+    // } else if(timeSegmentType === 'Meeting') {
+    //   color = `bg-orange-${shade}`
+    // }
+
+    return color
   }
 
   const getSegmentType = (date: string, time: string, schedule: Schedule) => {
@@ -318,7 +408,7 @@ const Grid = ({
         return segment.type
       }
     }
-    return null
+    return 'Regular'
   }
 
   return (
@@ -428,6 +518,7 @@ const Grid = ({
                     time,
                     schedule,
                   )
+
                   return (
                     <div
                       key={`${rowIndex}-${colIndex}`}
@@ -436,7 +527,9 @@ const Grid = ({
                           numRespondersAvailable && isAvailable
                             ? timeSegmentType === 'Regular'
                               ? 'bg-emerald-300'
-                              : 'bg-sky-300'
+                              : timeSegmentType === 'Preferred'
+                                ? 'bg-sky-300'
+                                : 'bg-orange-300'
                             : isAvailable
                               ? 'bg-red-50'
                               : '' // Red while editing schedule
@@ -480,7 +573,7 @@ const Grid = ({
           </div>
         </div>
       </div>
-      {isAvailable && (
+      {isAvailable && !isSelectingMeetingTime && (
         <div className="mb-2 flex justify-center">
           <button
             onClick={handleToggle}
