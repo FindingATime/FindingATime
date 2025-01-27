@@ -24,7 +24,7 @@ Visit local <a href="http://localhost:3000"><strong>Site</strong></a> ·
 
 ### Requirements
 
-- Node.js >= 18.17.0
+- Node.js >= 18.17.0 (19.3.0 originally)
 - pnpm >= 8
 
 ### Scripts
