@@ -64,6 +64,8 @@ const EventForm = ({
   const dialogRef = useRef<HTMLDialogElement>(null) // modal
 
   const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [isTitleChanged, setIsTitleChanged] = useState(false) // New state to control visibility of title error message
+  const [isLocationChanged, setIsLocationChanged] = useState(false) // New state to control visibility of location error message
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
@@ -124,6 +126,17 @@ const EventForm = ({
     }
     if (config?.length === 0) {
       setConfig(null)
+    }
+
+    if (
+      title === null ||
+      location === null ||
+      timezone === null ||
+      config === null ||
+      config.length === 0
+    ) {
+      setIsButtonsVisible(true)
+      return
     }
 
     const configJSON: { [key: string]: string[] } = {
@@ -191,12 +204,15 @@ const EventForm = ({
           type="text"
           value={title as string}
           placeholder="New Event Title"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            setIsTitleChanged(true)
+          }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
             title !== null && 'mb-6'
           }`}
         />
-        {(title === null || title === '') && (
+        {(title === null || (title === '' && isTitleChanged)) && (
           <p className="mb-3 p-0 text-error">Title is required.</p>
         )}
 
@@ -214,12 +230,15 @@ const EventForm = ({
           type="text"
           value={location as string}
           placeholder="Location"
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => {
+            setLocation(e.target.value)
+            setIsLocationChanged(true)
+          }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
             location !== null && 'mb-6'
           }`}
         />
-        {location === null && (
+        {(location === null || (location === '' && isLocationChanged)) && (
           <p className="mb-3 p-0 text-error">Location is required</p>
         )}
 
