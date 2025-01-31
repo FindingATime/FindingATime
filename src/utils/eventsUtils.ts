@@ -11,6 +11,7 @@ export interface Event {
   location: string
   config: { [key: string]: boolean }
   mode: string
+  creator: UUID
 }
 
 export async function insertEvent(
