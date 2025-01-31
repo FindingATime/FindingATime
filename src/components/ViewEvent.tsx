@@ -13,7 +13,11 @@ import { Suspense, useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { getEvent, Event } from '@/utils/eventsUtils'
 import { createUser, getUser } from '@/utils/userUtils'
-import { days, months } from '@/utils/dateUtils'
+import {
+  convertDateAndTimeToGoogleFormat,
+  days,
+  months,
+} from '@/utils/dateUtils'
 
 import Header from '@/components/Header'
 import EventView from '@/components/EventView'
@@ -22,6 +26,8 @@ import Grid from '@/components/AvailabilityGrid'
 import Responses from '@/components/Responses'
 import Username from '@/components/Username'
 import PreferredTimes from '@/components/PreferredTimes'
+import { get } from 'http'
+import { getTimeZoneIdentifier } from '@/utils/timeUtils'
 
 const ViewEvent = () => {
   const searchParams = useSearchParams()
@@ -245,19 +251,63 @@ const ViewEvent = () => {
 
   const createGoogleCalendarInvite = async () => {
     // Create Google Calendar Invite
+    if (event) {
+      const title = encodeURIComponent(event.title as string)
+      const description = encodeURIComponent(event.description as string)
+      const mylocation = encodeURIComponent(event.location as string)
+      const startDateTime = encodeURIComponent(
+        convertDateAndTimeToGoogleFormat(
+          meetingTimeSegment.date,
+          meetingTimeSegment.timesegment.beginning,
+          event.mode,
+        ),
+      )
+      const endDateTime = encodeURIComponent(
+        convertDateAndTimeToGoogleFormat(
+          meetingTimeSegment.date,
+          meetingTimeSegment.timesegment.end,
+          event.mode,
+        ),
+      )
+      const timeZone = encodeURIComponent(
+        getTimeZoneIdentifier(event.timezone as string),
+      )
+      let url = ''
+      if (event.mode === 'weekly') {
+        const days = event.config
 
-    const title = encodeURIComponent(event?.title as string)
-    const description = encodeURIComponent(event?.description as string)
-    const mylocation = encodeURIComponent(event?.location as string)
-    const startDateTime = encodeURIComponent(
-      meetingTimeSegment?.timesegment.beginning || '',
-    )
-    const endDateTime = encodeURIComponent(
-      meetingTimeSegment?.timesegment.end || '',
-    )
-    const timeZone = encodeURIComponent('America/Los_Angeles')
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}`
-    window.open(url, '_blank')
+        let daysArray = []
+        for (const day in days) {
+          if (days[day]) {
+            daysArray.push(day)
+          }
+        }
+        // change the days to the format that google calendar accepts
+        daysArray = daysArray.map((day) => {
+          if (day === 'sunday') {
+            return 'SU'
+          } else if (day === 'monday') {
+            return 'MO'
+          } else if (day === 'tuesday') {
+            return 'TU'
+          } else if (day === 'wednesday') {
+            return 'WE'
+          } else if (day === 'thursday') {
+            return 'TH'
+          } else if (day === 'friday') {
+            return 'FR'
+          } else if (day === 'saturday') {
+            return 'SA'
+          }
+        })
+        const daysArrayString = daysArray.join(',')
+        console.log('daysArrayString', daysArrayString)
+        url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}&recur=RRULE:FREQ=WEEKLY;BYDAY=${daysArrayString}`
+      } else if (event?.mode === 'specific') {
+        url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}`
+      }
+      window.open(url, '_blank')
+    }
   }
 
   return (

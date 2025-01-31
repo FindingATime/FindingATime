@@ -10,7 +10,6 @@ import {
 } from '@/utils/dateUtils'
 import { TimeSegment, Schedule } from '@/utils/attendeesUtils'
 import { UUID } from 'crypto'
-import { time } from 'console'
 
 interface GridProps {
   earliestTime: string
@@ -385,6 +384,8 @@ const Grid = ({
     const meetingTimeFormattedDate = formatDateMonthDay(
       meetingTimeSegment?.date || '',
     )
+
+    console.log('meetingTimeSegment?.date', meetingTimeSegment?.date)
 
     if (
       meetingTimeSegment?.timesegment.beginning === time &&

@@ -60,3 +60,41 @@ export const formattedDate = (date: string) => {
     ? convertDateStringToDateObject(date).toString()
     : date
 }
+
+export const convertDateAndTimeToGoogleFormat = (
+  dateString: string,
+  time: string,
+  mode: string,
+): string => {
+  // Parse the time into hour, minute, and period (AM/PM)
+  const [hour, minute, period] = time.match(/(\d+):(\d+) (\w+)/)!.slice(1)
+
+  // Adjust hours based on AM/PM
+  let adjustedHour = parseInt(hour, 10)
+  if (period === 'PM' && adjustedHour !== 12) {
+    adjustedHour += 12
+  } else if (period === 'AM' && adjustedHour === 12) {
+    adjustedHour = 0
+  }
+
+  // Parse the input date
+  const baseDate = mode === 'specific' ? new Date(dateString) : new Date()
+
+  // Set the local time to the date object
+  baseDate.setHours(adjustedHour, parseInt(minute, 10), 0, 0)
+
+  baseDate.setHours(baseDate.getHours() + 1)
+
+  // Create a UTC date using the local time
+  const utcDate = new Date(baseDate.toISOString())
+
+  // Format as Google Calendar date-time (YYYYMMDDTHHmmssZ)
+  const utcYear = utcDate.getUTCFullYear()
+  const utcMonth = String(utcDate.getUTCMonth() + 1).padStart(2, '0')
+  const utcDay = String(utcDate.getUTCDate()).padStart(2, '0')
+  const utcHours = String(utcDate.getUTCHours()).padStart(2, '0')
+  const utcMinutes = String(utcDate.getUTCMinutes()).padStart(2, '0')
+  const utcSeconds = '00'
+
+  return `${utcYear}${utcMonth}${utcDay}T${utcHours}${utcMinutes}${utcSeconds}Z`
+}
