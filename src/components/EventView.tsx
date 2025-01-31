@@ -65,7 +65,7 @@ export default function EventView({
         Copy Link
       </button>
       <Toaster />
-      {isCreator && !meetingTimeSegment && (
+      {isCreator && !meetingTimeSegment.date && (
         <button
           className="btn btn-outline btn-primary mt-3 border-[1.5px]"
           onClick={selectTimeslot}
