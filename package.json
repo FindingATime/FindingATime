@@ -54,7 +54,7 @@
     "react-query": "^3.39.3",
     "tailwind-merge": "^2.2.0",
     "undici": "^5.28.2",
-    "vanilla-cookieconsent": "^3.0.1"   
+    "vanilla-cookieconsent": "^3.0.1"
   },
   "devDependencies": {
     "@swc/core": "^1.3.102",
