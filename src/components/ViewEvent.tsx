@@ -36,6 +36,7 @@ const ViewEvent = () => {
   const [error, setError] = useState<string | null>(null)
   const [recentlyViewedEvents, setRecentlyViewedEvents] = useState<Event[]>([])
   const [schedule, setSchedule] = useState<Schedule>({})
+  const [beforeEditSchedule, setBeforeEditSchedule] = useState<Schedule>({})
   const [userName, setUserName] = useState<string | null>(null) // set to name entered when adding availability
   const [creatorID, setCreatorID] = useState<UUID | null>(null)
 
@@ -398,9 +399,18 @@ const ViewEvent = () => {
                         )
                         const userSchedule = user?.timesegments
                         if (userSchedule != null) {
-                          setSchedule(userSchedule)
+                          try {
+                            const userScheduleCopy = JSON.parse(
+                              JSON.stringify(userSchedule),
+                            )
+                            setBeforeEditSchedule(userScheduleCopy)
+                            setSchedule(userScheduleCopy)
+                          } catch (error) {
+                            console.error('Error parsing user schedule:', error)
+                          }
                         } else {
                           setSchedule({})
+                          setBeforeEditSchedule({})
                         }
                       }}
                     >
@@ -445,8 +455,9 @@ const ViewEvent = () => {
                   <button
                     className="btn btn-outline rounded-full px-4 py-2 text-red-400 hover:!border-red-400 hover:bg-red-300"
                     onClick={() => {
-                      setIsAvailable(false)
+                      setSchedule(beforeEditSchedule)
                       setIsButtonsVisible(false)
+                      setIsAvailable(false)
                       setIsSelectingMeetingTime(false)
                       setUserName('') // Reset username when user cancels
                       setMeetingTimeSegment({
