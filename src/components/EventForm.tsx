@@ -1,12 +1,20 @@
 'use client'
 import React from 'react'
-import { days, months, modeOptions, isSameDate } from '@/utils/dateUtils'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Calendar from 'react-calendar'
-import { times, sortedTimeZones } from '@/utils/timeUtils'
+import { useRouter } from 'next/navigation'
+import { UUID } from 'crypto'
 import '@/app/calendarStyles.css'
 
+import Username from '@/components/Username'
+import { days, months, isSameDate } from '@/utils/dateUtils'
+import { times, sortedTimeZones } from '@/utils/timeUtils'
+import { addUserCreateEvent } from '@/utils/userUtils'
+import { addAttendee, Schedule } from '@/utils/attendeesUtils'
+
 interface EventFormProps {
+  username: string | null
+  setUsername: React.Dispatch<React.SetStateAction<string | null>>
   title: string | null
   setTitle: React.Dispatch<React.SetStateAction<string | null>>
   description: string
@@ -23,9 +31,14 @@ interface EventFormProps {
   setConfig: React.Dispatch<React.SetStateAction<string[] | null>>
   timezone: string | null
   setTimezone: React.Dispatch<React.SetStateAction<string | null>>
+  isAvailable: boolean
+  setIsAvailable: React.Dispatch<React.SetStateAction<boolean>>
+  schedule: Schedule
 }
 
 const EventForm = ({
+  username,
+  setUsername,
   title,
   setTitle,
   description,
@@ -42,12 +55,23 @@ const EventForm = ({
   setConfig,
   timezone,
   setTimezone,
+  isAvailable,
+  setIsAvailable,
+  schedule,
 }: EventFormProps) => {
   const [passSpecificDaysLimitMessage, setPassSpecificDaysLimitMessage] =
     useState('')
+  const dialogRef = useRef<HTMLDialogElement>(null) // modal
+
+  const [isButtonsVisible, setIsButtonsVisible] = useState(false) // New state to control visibility of buttons
+  const [isTitleChanged, setIsTitleChanged] = useState(false) // New state to control visibility of title error message
+  const [isLocationChanged, setIsLocationChanged] = useState(false) // New state to control visibility of location error message
 
   const maxDaysAhead = 60
   const maxDaysSelectable = 7
+
+  //added router to redirect to view-event page after creating event
+  const router = useRouter()
 
   // Function to handle selected daysOfWeek array based on checkbox selection and deselection
   const handleSelectedDayOfWeek = (day: string) => {
@@ -71,25 +95,129 @@ const EventForm = ({
     }
   }
 
+  // Function to open modal for after clicking "Sign In"
+  const openModal = () => {
+    if (dialogRef.current && !username) {
+      dialogRef.current.showModal()
+    } else {
+      setIsAvailable(true)
+      setIsButtonsVisible(true)
+    }
+  }
+
+  const handleSubmit = async () => {
+    const daysOfWeekJSON: { [key: string]: boolean } = {
+      Mon: false,
+      Tue: false,
+      Wed: false,
+      Thu: false,
+      Fri: false,
+      Sat: false,
+      Sun: false,
+    }
+    if (title?.length === 0) {
+      setTitle(null)
+    }
+    if (location?.length === 0) {
+      setLocation(null)
+    }
+    if (timezone?.length === 0) {
+      setTimezone(null)
+    }
+    if (config?.length === 0) {
+      setConfig(null)
+    }
+
+    if (
+      title === null ||
+      location === null ||
+      timezone === null ||
+      config === null ||
+      config.length === 0
+    ) {
+      setIsButtonsVisible(true)
+      return
+    }
+
+    const configJSON: { [key: string]: string[] } = {
+      days: [],
+    }
+
+    if (mode === 'weekly') {
+      config?.forEach((day) => {
+        if (daysOfWeekJSON.hasOwnProperty(day)) {
+          daysOfWeekJSON[day] = true
+        }
+      })
+    } else {
+      config?.forEach((day) => {
+        configJSON.days.push(day)
+      })
+    }
+
+    try {
+      await addUserCreateEvent(
+        username ? username : 'Guest',
+        title as string,
+        description,
+        earliestTime,
+        latestTime,
+        location as string,
+        timezone as string,
+        mode,
+        mode === 'weekly'
+          ? daysOfWeekJSON // for days of the week {Mon: true, Tue: false, ...}
+          : JSON.parse(JSON.stringify({ days: configJSON.days })), // for specific days {days: [1, 2, 3, ...]}, days are numbers
+      ).then((data) => {
+        // Add attendee to the event
+        addAttendee(
+          data[0].id,
+          localStorage.getItem('username') as UUID,
+          schedule,
+        )
+        // Redirects to the event view page using the eventId
+        router.push(`/view-event?eventId=${data[0].id}`)
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message)
+      } else {
+        console.error('Unexpected error:', error)
+      }
+    }
+    // handleSaveResponse() // Call handleSaveResponse to save the response
+    setIsAvailable(false) // Set availability to false when user creates event/saves their availability
+  }
+
   return (
     <>
+      <div className="mb-6">
+        {username != null && isAvailable && (
+          <Username username={username} setUsername={setUsername} />
+        )}
+      </div>
       <form //Form to enter Event data (Title, Description...etc)
         className="flex w-full flex-col"
       >
         <input //Event Title text input
+          id="titleInput"
           type="text"
           value={title as string}
           placeholder="New Event Title"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            setIsTitleChanged(true)
+          }}
           className={`input w-full border-gray-300 text-xl font-normal focus-visible:ring-0 ${
             title !== null && 'mb-6'
           }`}
         />
-        {title === null && (
-          <p className="mb-3 p-0 text-error">Title is required</p>
+        {(title === null || (title === '' && isTitleChanged)) && (
+          <p className="mb-3 p-0 text-error">Title is required.</p>
         )}
 
         <textarea //Event Description text input
+          id="descriptionInput"
           rows={3}
           value={description}
           placeholder="Event Description (optional)"
@@ -98,15 +226,19 @@ const EventForm = ({
         ></textarea>
 
         <input //Event Location text input
+          id="locationInput"
           type="text"
           value={location as string}
           placeholder="Location"
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => {
+            setLocation(e.target.value)
+            setIsLocationChanged(true)
+          }}
           className={`input w-full border-gray-300 text-base font-normal focus-visible:ring-0 ${
             location !== null && 'mb-6'
           }`}
         />
-        {location === null && (
+        {(location === null || (location === '' && isLocationChanged)) && (
           <p className="mb-3 p-0 text-error">Location is required</p>
         )}
 
@@ -114,6 +246,7 @@ const EventForm = ({
           className="flex w-full flex-row items-center justify-center gap-3"
         >
           <select //EarliestTime dropdown
+            id="earliestTimeDropdown"
             value={earliestTime}
             onChange={(e) => setEarliestTime(e.target.value)}
             className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
@@ -131,6 +264,7 @@ const EventForm = ({
             to
           </p>
           <select //LatestTime dropdown
+            id="latestTimeDropdown"
             value={latestTime}
             onChange={(e) => setLatestTime(e.target.value)}
             className="select mb-6 w-full max-w-xl border-gray-300 text-base font-normal"
@@ -146,6 +280,7 @@ const EventForm = ({
 
         <div className="mb-4">
           <button
+            id="weeklyBtn"
             type="button"
             className={`btn ${mode === 'weekly' ? 'btn-active' : ''}`}
             onClick={() => {
@@ -156,6 +291,7 @@ const EventForm = ({
             Weekly Days
           </button>
           <button
+            id="specificBtn"
             type="button"
             className={`btn ${mode === 'specific' ? 'btn-active' : ''}`}
             onClick={() => {
@@ -263,6 +399,7 @@ const EventForm = ({
             >
               {days.map((day) => (
                 <input
+                  id={day}
                   key={day}
                   className="btn btn-circle btn-sm h-10 w-10 border-gray-300 text-sm font-normal"
                   type="checkbox"
@@ -280,6 +417,7 @@ const EventForm = ({
         )}
 
         <select //Timezone dropdown
+          id="timezoneDropdown"
           value={timezone as string}
           onChange={(e) => setTimezone(e.target.value)}
           className="select w-full border-gray-300 text-base font-normal"
@@ -297,6 +435,68 @@ const EventForm = ({
           <p className="mt-0 p-0 text-error">Timezone is required</p>
         )}
       </form>
+      <div //button container for positioning button
+        className="mx-4 flex justify-center pt-8"
+      >
+        {!isAvailable && ( //"Add Availability" button is only visible when user has not signed in and added their availability
+          <button
+            id="addAvailabilityBtn"
+            className="btn btn-primary ml-4 rounded-full px-4 py-2"
+            onClick={openModal}
+          >
+            Add Availability
+          </button>
+        )}
+
+        {isButtonsVisible && ( // Conditionally render buttons section
+          <div //button container for positioning "Create Event" button
+            className="flex flex-row justify-center gap-4"
+          >
+            <button
+              id="createEventBtn"
+              className="btn btn-primary rounded-full px-4 py-2"
+              onClick={() => {
+                setIsButtonsVisible(false)
+                handleSubmit()
+              }}
+            >
+              Create Event
+            </button>
+          </div>
+        )}
+
+        <dialog ref={dialogRef} id="username_modal" className="modal">
+          <div className="modal-box focus:outline-white ">
+            <h3 className="py-4 text-lg font-bold">Sign In</h3>
+
+            <input
+              id="usernameInput"
+              type="text"
+              placeholder="Enter Your Name"
+              className="input input-bordered w-full max-w-xs py-4"
+              value={username ? username : ''}
+              onChange={(e) => {
+                setUsername(e.target.value)
+              }}
+            />
+
+            <div className="modal-action">
+              <form method="dialog">
+                <button
+                  id="signInBtn"
+                  className="btn btn-primary ml-4 rounded-full px-4 py-2"
+                  onClick={() => {
+                    setIsAvailable(true) // Update isAvailable to true when name is entered
+                    setIsButtonsVisible(true) // Show buttons when user signs in
+                  }}
+                >
+                  Sign In
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
+      </div>
     </>
   )
 }
