@@ -385,19 +385,12 @@ const Grid = ({
       meetingTimeSegment?.date || '',
     )
 
-    console.log('meetingTimeSegment?.date', meetingTimeSegment?.date)
-
     if (
       meetingTimeSegment?.timesegment.beginning === time &&
       meetingTimeFormattedDate === date
     ) {
       color = `bg-orange-${shade}`
     }
-    // else if(timeSegmentType === 'Preferred') {
-    //   color = `bg-sky-${shade}`
-    // } else if(timeSegmentType === 'Meeting') {
-    //   color = `bg-orange-${shade}`
-    // }
 
     return color
   }
@@ -533,11 +526,13 @@ const Grid = ({
                       className={`flex h-8 items-center justify-center border-[0.5px] border-gray-200 
                         ${
                           numRespondersAvailable && isAvailable
-                            ? timeSegmentType === 'Regular'
+                            ? timeSegmentType === 'Regular' // Emerald for regular time
                               ? 'bg-emerald-300'
-                              : timeSegmentType === 'Preferred'
+                              : timeSegmentType === 'Preferred' // Sky for preferred time
                                 ? 'bg-sky-300'
-                                : 'bg-orange-300'
+                                : timeSegmentType === 'Meeting'
+                                  ? 'bg-orange-300' // Orange for meeting time
+                                  : 'bg-red-600' // Dark red for default if no type
                             : isAvailable
                               ? 'bg-red-50'
                               : '' // Red while editing schedule

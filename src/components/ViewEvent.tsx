@@ -284,24 +284,9 @@ const ViewEvent = () => {
         }
         // change the days to the format that google calendar accepts
         daysArray = daysArray.map((day) => {
-          if (day === 'sunday') {
-            return 'SU'
-          } else if (day === 'monday') {
-            return 'MO'
-          } else if (day === 'tuesday') {
-            return 'TU'
-          } else if (day === 'wednesday') {
-            return 'WE'
-          } else if (day === 'thursday') {
-            return 'TH'
-          } else if (day === 'friday') {
-            return 'FR'
-          } else if (day === 'saturday') {
-            return 'SA'
-          }
+          return day.substring(0, 2).toUpperCase()
         })
         const daysArrayString = daysArray.join(',')
-        console.log('daysArrayString', daysArrayString)
         url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}&recur=RRULE:FREQ=WEEKLY;BYDAY=${daysArrayString}`
       } else if (event?.mode === 'specific') {
         url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${description}&location=${mylocation}&ctz=${timeZone}`
