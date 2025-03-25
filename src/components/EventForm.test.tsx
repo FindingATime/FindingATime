@@ -86,6 +86,9 @@ describe('Event Form Component', () => {
 
     // Act
     const titleInput = eventForm.container.querySelector('#titleInput')
+    fireEvent.change(titleInput as Element, {
+      target: { value: 'Test title to be removed' },
+    })
     fireEvent.change(titleInput as Element, { target: { value: '' } })
 
     // Assert
