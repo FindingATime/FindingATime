@@ -38,7 +38,7 @@
     "@vercel/analytics": "^1.1.1",
     "@cloudflare/next-on-pages": "1.13.5",
     "vercel": "39.0.3",
-    "axios": "^1.7.4",
+    "axios": "^1.8.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "daisyui": "^4.12.10",
